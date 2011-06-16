@@ -1,0 +1,123 @@
+.suggestion_mask{
+z-index:-2000;
+position:absolute;
+overflow:hidden;
+overflow-y:auto;
+visibility:hidden;
+word-break:break-all;
+word-wrap:break-word;
+letter-spacing:1.2px;
+}
+
+/* CSS container shadow */
+#suggestion_box_container {
+	position:absolute;
+}
+#suggestion_box_container .shadow2,
+#suggestion_box_container .shadow3,
+#suggestion_box_container .container {
+	position: relative;
+    left: -1px;
+    top: -1px;
+}
+#suggestion_box_container .shadow1 {
+	background: #F1F0F1;
+}
+#suggestion_box_container .shadow2 {
+	background: #DBDADB;
+}
+#suggestion_box_container .shadow3 {
+	background: #B8B6B8;
+}
+#suggestion_box_container .container {
+	background: #ffffff;
+    border: 1px solid #bebebe;
+	font-family:Arial, Helvetica, sans-serif;
+}
+/** CSS container shadow **/
+
+/* common suggestion box */
+#suggestion_box_container  #suggestion_title{
+	border-bottom: 1px solid #bebebe;
+	font-size:16px;
+	color:#909090;
+	padding:3px 0 3px 20px;
+	background:url(/xwiki/resources/icons/silk/link.gif) no-repeat 2px 5px;
+}
+
+#suggestion_box_container  #suggestion_resultList{
+	word-break:break-all;
+	word-wrap:break-word;
+	font-size:12px;
+	color:#000099;
+}
+#suggestion_resultList ul, #suggestion_resultList li{
+	margin: 0;
+	padding: 0;
+}
+#suggestion_resultList ul{
+	list-style: none outside none;
+}
+
+/* link suggestion related */
+#suggestion_resultList .xPagePreview{
+	background:url(/xwiki/resources/js/xwiki/wysiwyg/xwe/images/page_white_text.gif) no-repeat 5px center;
+	cursor: pointer;
+    padding: 5px 5px 5px 25px;
+}
+
+#suggestion_resultList .xPagePreviewTitle{
+    text-transform: none;
+	color: #666666;
+    font-weight: bolder;
+}
+
+#suggestion_resultList .xPagePreviewFullname{
+	color: #777777;
+    font-size: 90%;
+    font-style: italic;
+}
+
+#suggestion_resultList  #suggestion_wikipage{
+	height:150px;
+	overflow:hidden;
+	overflow-y:auto;
+}
+
+#suggestion_resultList  #suggestion_attachment{
+	height:100px;
+	overflow:hidden;
+	overflow-y:auto;
+	border-top: 1px solid #bebebe;
+}
+
+#suggestion_resultList .xListItem{
+	background:url(/xwiki/resources/js/xwiki/wysiwyg/xwe/images/attach.gif) no-repeat 5px center;
+	cursor: pointer;
+    padding: 5px 5px 5px 25px;
+}
+
+#suggestion_resultList .xAttachPreview{
+	text-transform: none;
+	color: #666666;
+}
+
+#suggestion_resultList .xListItem-selected {
+    background-color: #D4E8FF;
+}
+
+#suggestion_resultList .xListItem-hover {
+    background-color: #E8EAF0;
+}
+
+
+/* link suggestion related end*/
+
+#suggestion_box_container  #suggestion_toolbar{
+	border-top: 1px solid #bebebe;
+	padding:3px 0 3px 20px;
+	font-size:16px;
+	color:#909090;
+	background:url(/xwiki/resources/icons/xwiki/search.png) no-repeat 2px 5px;
+}
+/** common suggestion box **/
