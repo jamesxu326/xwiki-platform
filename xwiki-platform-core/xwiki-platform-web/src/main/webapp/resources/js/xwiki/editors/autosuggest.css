@@ -11,70 +11,70 @@ letter-spacing:1.2px;
 
 /* CSS container shadow */
 #suggestion_box_container {
-	position:absolute;
+   position:absolute;
 }
 #suggestion_box_container .container {
-	position:relative;
-	background: #ffffff;
+    position:relative;
+    background: #ffffff;
     border: 1px solid #bebebe;
 }
 
 /* common suggestion box */
 #suggestion_box_container  #suggestion_title{
-	border-bottom: 1px solid #bebebe;
-	font-size:16px;
-	color:#909090;
-	padding:3px 0 3px 20px;
-	background:url(/xwiki/resources/icons/silk/link.gif) no-repeat 2px 5px;
+    border-bottom: 1px solid #bebebe;
+    font-size:16px;
+    color:#909090;
+    padding:3px 0 3px 20px;
+    background:url(/xwiki/resources/icons/silk/link.gif) no-repeat 2px 5px;
 }
 
 #suggestion_box_container  #suggestion_resultList{
-	word-break:break-all;
-	word-wrap:break-word;
-	font-size:12px;
-	color:#000099;
+    word-break:break-all;
+    word-wrap:break-word;
+    font-size:12px;
+    color:#000099;
 }
 /* link suggestion related */
 #suggestion_resultList .pageItem{
-	background:url(/xwiki/resources/js/xwiki/wysiwyg/xwe/images/page_white_text.gif) no-repeat 5px center;
-	cursor: pointer;
+    background:url(/xwiki/resources/icons/silk/page_white_text.gif) no-repeat 5px center;
+    cursor: pointer;
     padding: 5px 5px 5px 25px;
 }
 
 #suggestion_resultList .pageItemTitle{
     text-transform: none;
-	color: #666666;
+    color: #666666;
     font-weight: bolder;
 }
 
 #suggestion_resultList .pageItemFullname{
-	color: #777777;
+    color: #777777;
     font-size: 90%;
     font-style: italic;
 }
 
 #suggestion_resultList  #suggestion_wikipage{
-	height:150px;
-	overflow:hidden;
-	overflow-y:auto;
-	border-bottom: 1px solid #bebebe;
+    height:150px;
+    overflow:hidden;
+    overflow-y:auto;
+    border-bottom: 1px solid #bebebe;
 }
 
 #suggestion_resultList  #suggestion_attachment{
-	height:100px;
-	overflow:hidden;
-	overflow-y:auto;
+    height:100px;
+    overflow:hidden;
+    overflow-y:auto;
 }
 
 #suggestion_resultList .attachmentItem{
-	background:url(/xwiki/resources/js/xwiki/wysiwyg/xwe/images/attach.gif) no-repeat 5px center;
-	cursor: pointer;
+    background:url(/xwiki/resources/icons/silk/attach.gif) no-repeat 5px center;
+    cursor: pointer;
     padding: 5px 5px 5px 25px;
 }
 
 #suggestion_resultList .attachmentItemTitle{
-	text-transform: none;
-	color: #666666;
+    text-transform: none;
+    color: #666666;
 }
 
 #suggestion_resultList .itemSelected {
@@ -85,10 +85,10 @@ letter-spacing:1.2px;
 /* link suggestion related end*/
 
 #suggestion_box_container  #suggestion_toolbar{
-	border-top: 1px solid #bebebe;
-	padding:3px 0 3px 20px;
-	font-size:16px;
-	color:#909090;
-	background:url(/xwiki/resources/icons/xwiki/search.png) no-repeat 2px 5px;
+    border-top: 1px solid #bebebe;
+    padding:3px 0 3px 20px;
+    font-size:16px;
+    color:#909090;
+    background:url(/xwiki/resources/icons/xwiki/search.png) no-repeat 2px 5px;
 }
 /** common suggestion box **/

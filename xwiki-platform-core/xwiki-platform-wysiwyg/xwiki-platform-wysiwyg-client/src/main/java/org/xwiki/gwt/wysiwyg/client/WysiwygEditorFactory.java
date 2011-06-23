@@ -21,6 +21,7 @@ package org.xwiki.gwt.wysiwyg.client;
 
 import org.xwiki.gwt.user.client.Config;
 import org.xwiki.gwt.wysiwyg.client.plugin.PluginFactoryManager;
+import org.xwiki.gwt.wysiwyg.client.plugin.autosuggestion.AutoSuggestionPluginFactory;
 import org.xwiki.gwt.wysiwyg.client.plugin.color.ColorPluginFactory;
 import org.xwiki.gwt.wysiwyg.client.plugin.embed.EmbedPluginFactory;
 import org.xwiki.gwt.wysiwyg.client.plugin.font.FontPluginFactory;
@@ -108,6 +109,7 @@ public final class WysiwygEditorFactory
         pfm.addPluginFactory(EmbedPluginFactory.getInstance());
         pfm.addPluginFactory(StylePluginFactory.getInstance());
         // add additional PluginFactory for other plug-ins
+        pfm.addPluginFactory(AutoSuggestionPluginFactory.getInstance());
     }
 
     /**
