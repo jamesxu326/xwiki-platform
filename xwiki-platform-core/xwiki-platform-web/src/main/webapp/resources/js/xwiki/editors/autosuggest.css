@@ -13,28 +13,11 @@ letter-spacing:1.2px;
 #suggestion_box_container {
 	position:absolute;
 }
-#suggestion_box_container .shadow2,
-#suggestion_box_container .shadow3,
 #suggestion_box_container .container {
-	position: relative;
-    left: -1px;
-    top: -1px;
-}
-#suggestion_box_container .shadow1 {
-	background: #F1F0F1;
-}
-#suggestion_box_container .shadow2 {
-	background: #DBDADB;
-}
-#suggestion_box_container .shadow3 {
-	background: #B8B6B8;
-}
-#suggestion_box_container .container {
+	position:relative;
 	background: #ffffff;
     border: 1px solid #bebebe;
-	font-family:Arial, Helvetica, sans-serif;
 }
-/** CSS container shadow **/
 
 /* common suggestion box */
 #suggestion_box_container  #suggestion_title{
@@ -51,28 +34,20 @@ letter-spacing:1.2px;
 	font-size:12px;
 	color:#000099;
 }
-#suggestion_resultList ul, #suggestion_resultList li{
-	margin: 0;
-	padding: 0;
-}
-#suggestion_resultList ul{
-	list-style: none outside none;
-}
-
 /* link suggestion related */
-#suggestion_resultList .xPagePreview{
+#suggestion_resultList .pageItem{
 	background:url(/xwiki/resources/js/xwiki/wysiwyg/xwe/images/page_white_text.gif) no-repeat 5px center;
 	cursor: pointer;
     padding: 5px 5px 5px 25px;
 }
 
-#suggestion_resultList .xPagePreviewTitle{
+#suggestion_resultList .pageItemTitle{
     text-transform: none;
 	color: #666666;
     font-weight: bolder;
 }
 
-#suggestion_resultList .xPagePreviewFullname{
+#suggestion_resultList .pageItemFullname{
 	color: #777777;
     font-size: 90%;
     font-style: italic;
@@ -82,32 +57,28 @@ letter-spacing:1.2px;
 	height:150px;
 	overflow:hidden;
 	overflow-y:auto;
+	border-bottom: 1px solid #bebebe;
 }
 
 #suggestion_resultList  #suggestion_attachment{
 	height:100px;
 	overflow:hidden;
 	overflow-y:auto;
-	border-top: 1px solid #bebebe;
 }
 
-#suggestion_resultList .xListItem{
+#suggestion_resultList .attachmentItem{
 	background:url(/xwiki/resources/js/xwiki/wysiwyg/xwe/images/attach.gif) no-repeat 5px center;
 	cursor: pointer;
     padding: 5px 5px 5px 25px;
 }
 
-#suggestion_resultList .xAttachPreview{
+#suggestion_resultList .attachmentItemTitle{
 	text-transform: none;
 	color: #666666;
 }
 
-#suggestion_resultList .xListItem-selected {
+#suggestion_resultList .itemSelected {
     background-color: #D4E8FF;
-}
-
-#suggestion_resultList .xListItem-hover {
-    background-color: #E8EAF0;
 }
 
 
