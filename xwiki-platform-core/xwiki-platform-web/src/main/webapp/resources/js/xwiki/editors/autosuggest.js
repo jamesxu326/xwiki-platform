@@ -33,27 +33,27 @@ autosuggestion.SuggestionBox = Class.create({
    * of the suggestion box
    */
   initialize : function(position, size, editor) {
-	if(editor == null){
-	  return;
-	}
-	this.editor = editor;
-	// The container of the suggestion box
+    if(editor == null){
+      return;
+    }
+    this.editor = editor;
+    // The container of the suggestion box
     var suggestion_box_container = new Element('div', {'id' : 'suggestion_box_container'});
-	// The suggestion box
-	var suggestion_box = new Element('div', {'class' : 'container', 'id' : 'suggestion_box_container'});
-	suggestion_box_container.appendChild(suggestion_box);
-	// The title container of suggestion box
-	var suggestion_title = new Element('div', {'id' : 'suggestion_title'});
-	suggestion_box.appendChild(suggestion_title);
-	// The suggestion list container of the suggestion box
-	var suggestion_resultList = new Element('div', {'id' : 'suggestion_resultList'});
-	suggestion_box.appendChild(suggestion_resultList);
+    // The suggestion box
+    var suggestion_box = new Element('div', {'class' : 'container', 'id' : 'suggestion_box_container'});
+    suggestion_box_container.appendChild(suggestion_box);
+    // The title container of suggestion box
+    var suggestion_title = new Element('div', {'id' : 'suggestion_title'});
+    suggestion_box.appendChild(suggestion_title);
+    // The suggestion list container of the suggestion box
+    var suggestion_resultList = new Element('div', {'id' : 'suggestion_resultList'});
+    suggestion_box.appendChild(suggestion_resultList);
 	// Toolbar container is only for wysiwyg editor
-	if(this.editor.type == "wysiwyg") {
-	  var suggestion_toolbar = new Element('div', {'id' : 'suggestion_toolbar'});
-	  suggestion_box.appendChild(suggestion_toolbar);
-	}
-	document.body.appendChild(suggestion_box_container);
+    if(this.editor.type == "wysiwyg") {
+      var suggestion_toolbar = new Element('div', {'id' : 'suggestion_toolbar'});
+      suggestion_box.appendChild(suggestion_toolbar);
+    }
+    document.body.appendChild(suggestion_box_container);
   },
   
   /**
@@ -62,29 +62,29 @@ autosuggestion.SuggestionBox = Class.create({
    * 2) Remove the dom of the suggestion box;
    */
   destroy : function() {
-	// Remove the suggestion box
-	this.unBindSuggestionBoxEvents();
-	$('suggestion_box_container').remove();
+    // Remove the suggestion box
+    this.unBindSuggestionBoxEvents();
+    $('suggestion_box_container').remove();
   },
   
   /**
    * Update the position and the size of the suggestion box 
    */
   updatePosition : function(position, size){
-	if(position == null) return;
-	if(size == null) size = this.size;
-	this.size = size;
-	this.posistion = position;
-	$("suggestion_box_container").setStyle({
-	  "top": position.top + "px",
-	  "left": position.left + "px",
-	  "width": size.width + "px",
-	  "height": size.height + "px"
-	});
+    if(position == null) return;
+    if(size == null) size = this.size;
+    this.size = size;
+    this.posistion = position;
+    $("suggestion_box_container").setStyle({
+      "top": position.top + "px",
+      "left": position.left + "px",
+      "width": size.width + "px",
+      "height": size.height + "px"
+    });
   },
   
   isDestroyed : function(){
-	return $("suggestion_box_container") == null ? true : false;
+    return $("suggestion_box_container") == null ? true : false;
   },
 
   /**
@@ -94,11 +94,11 @@ autosuggestion.SuggestionBox = Class.create({
    * @Param event The click event
    */
   onItemClick : function(index, itemList, event){
-	  this.itemClickHandler(index, itemList);
-	  //Focus on the editor in order to listen to the event specific to editor
-	  //like key navigation
-	  this.editor.obj.focus();
-	  itemList[index].addClassName("itemSelected");
+    this.itemClickHandler(index, itemList);
+    //Focus on the editor in order to listen to the event specific to editor
+    //like key navigation
+    this.editor.obj.focus();
+    itemList[index].addClassName("itemSelected");
   },
   
   /**
@@ -108,7 +108,7 @@ autosuggestion.SuggestionBox = Class.create({
    * @Param event The click event
    */
   onItemDbClick : function(index, itemList, event){
-	  this.itemDbClickHandler(index, itemList);
+    this.itemDbClickHandler(index, itemList);
   },
   
   /**
@@ -117,29 +117,29 @@ autosuggestion.SuggestionBox = Class.create({
    * @Param event The click event
    */
   onKeyNavigate : function(itemList, event) {
-	  var keyCode = event.keyCode;
-	  var i = this.index;
-	  switch(keyCode){
-		case 40:
-		  i = i + 1;
-		  break;
-		case 38:
-		  i = i - 1;
-		  break;
-		case 13:
-		  var selectedValue = this.getSelectedItemValue(i);
-		  console.debug("selected item value:" + selectedValue);
-		  document.fire("xwiki:autosuggestion:itemSelected", {selectedValue:selectedValue});
-		  this.destroy();
-		  return false;
-		  break;
-		default:
-		  return true;
-	  }
+    var keyCode = event.keyCode;
+    var i = this.index;
+    switch(keyCode){
+      case 40:
+        i = i + 1;
+        break;
+      case 38:
+        i = i - 1;
+        break;
+      case 13:
+        var selectedValue = this.getSelectedItemValue(i);
+        console.debug("selected item value:" + selectedValue);
+        document.fire("xwiki:autosuggestion:itemSelected", {selectedValue:selectedValue});
+        this.destroy();
+        return false;
+        break;
+      default:
+        return true;
+    }
 	  
-	  i = i >= itemList.length ? 0 : i< 0 ? itemList.length-1 : i;
-	  Event.stop(event);
-	  return this.keyNavigateHandler(i, itemList);
+    i = i >= itemList.length ? 0 : i< 0 ? itemList.length-1 : i;
+    Event.stop(event);
+    return this.keyNavigateHandler(i, itemList);
   },
   
   /**
@@ -149,42 +149,42 @@ autosuggestion.SuggestionBox = Class.create({
    * @Param size The size of the suggestion box
    */
   showSuggestion : function(results, position, size){
-	//To overwirte
+    //To overwirte
   },
   
   /**
    * Handler for clicking the suggestion items
    */
   itemClickHandler :function(index, itemList, event) {
-	// To overwrite
+    // To overwrite
   },
   
   /**
    * Handler for double clicking the suggestion items
    */
   itemDbClickHandler :function(index, itemList, event) {
-	// To overwrite
+    // To overwrite
   },
   
   /**
    * Handler for navigating the items by up and down keys.
    */
   keyNavigateHandler :function(index, itemList) {
-	// To overwrite
+    // To overwrite
   },
   
   /**
    * Bind the events to the suggestion box
    */
   bindSuggestionBoxEvents : function(){
-	//To overwrite
+    //To overwrite
   },
   
   /**
    * unBind the events of the suggestion box
    */
   unBindSuggestionBoxEvents : function(){
-	//To overwrite
+    //To overwrite
   },
   
   /**
@@ -192,7 +192,7 @@ autosuggestion.SuggestionBox = Class.create({
    * @Param index The index of the selected item
    */
   getSelectedItemValue : function(index) {
-	// To overwrite
+    // To overwrite
   }
 });
 
@@ -217,154 +217,153 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
    */
   initialize : function($super, results, position, size, editor) {
     $super(position, size, editor);
-	$("suggestion_title").update(this.title);
-	this.pageItemValues = results.get('pages');
-	this.attachmentItemValues = results.get('attachments');
+    $("suggestion_title").update(this.title);
+    this.pageItemValues = results.get('pages');
+    this.attachmentItemValues = results.get('attachments');
   },
   
   /** @Overwrite */
   showSuggestions : function(results, position, size) {
-	if(this.isDestroyed()){
-	  return;
-	}
+    if(this.isDestroyed()){
+      return;
+    }
+    this.pageItemValues = results.get('pages');
+    this.attachmentItemValues = results.get('attachments');
+    if(this.pageItemValues == null && this.attachmentItemValues == null) {
+      this.destroy();
+      return;
+    }
 	
-	this.pageItemValues = results.get('pages');
-	this.attachmentItemValues = results.get('attachments');
-	if(this.pageItemValues == null && this.attachmentItemValues == null) {
-	  this.destroy();
-	  return;
-	}
+    // Clear the existed suggestion list
+    this.unBindSuggestionBoxEvents(); 
+    if($("suggestion_wikipage")) $("suggestion_wikipage").remove();
+    if($("suggestion_attachment")) $("suggestion_attachment").remove();
 	
-	// Clear the existed suggestion list
-	this.unBindSuggestionBoxEvents(); 
-	if($("suggestion_wikipage")) $("suggestion_wikipage").remove();
-	if($("suggestion_attachment")) $("suggestion_attachment").remove();
+    // Update the position and the size of suggestion box
+    this.updatePosition(position, size);
+    // Reset the index to -1, no item selected
+    this.index = -1;
+
+    if(this.pageItemValues != null) {
+      // Show the attachment results
+      this._showPageSuggestions();
+    }
 	
-	// Update the position and the size of suggestion box
-	this.updatePosition(position, size);
-	// Reset the index to -1, no item selected
-	this.index = -1;
+    if(this.attachmentItemValues != null) {
+      // Show the attachment results
+      this._showAttachmentSuggestions();
+    }
 	
-	if(this.pageItemValues != null) {
-	  // Show the attachment results
-	  this._showPageSuggestions();
-	}
-	
-	if(this.attachmentItemValues != null) {
-	  // Show the attachment results
-	  this._showAttachmentSuggestions();
-	}
-	
-	this.bindSuggestionBoxEvents(); 
+    this.bindSuggestionBoxEvents(); 
   },
   
   /**
    * Show the page results
    */
   _showPageSuggestions : function() {
-	if(this.pageItemValues == null) {
-	  return;
-	}
-	var suggestion_wikipage = new Element('div', {'id' : 'suggestion_wikipage'});
-	$("suggestion_resultList").insert({top: suggestion_wikipage});
+    if(this.pageItemValues == null) {
+      return;
+    }
+    var suggestion_wikipage = new Element('div', {'id' : 'suggestion_wikipage'});
+    $("suggestion_resultList").insert({top: suggestion_wikipage});
 	
-	this.pageItemValues.each(function(obj, index){
-	  var pageDiv = new Element('div', {'class' : 'pageItem'});		
-	  var titleDiv = new Element('div', {'class' : 'pageItemTitle'}); 
-	  titleDiv.insert(obj);
-	  
-	  var fullNameDiv = new Element('div', {'class' : 'pageItemFullname'}); 
-	  fullNameDiv.insert(index+"."+obj);
-	  
+    this.pageItemValues.each(function(obj, index){
+      var pageDiv = new Element('div', {'class' : 'pageItem'});		
+      var titleDiv = new Element('div', {'class' : 'pageItemTitle'}); 
+      titleDiv.insert(obj);
+      	  
+      var fullNameDiv = new Element('div', {'class' : 'pageItemFullname'}); 
+      fullNameDiv.insert(index+"."+obj);
+      	  
       pageDiv.appendChild(titleDiv);
-	  pageDiv.appendChild(fullNameDiv);
-	  suggestion_wikipage.appendChild(pageDiv);
-	  suggestion_wikipage.scrollTop = 0;
-	})
+      pageDiv.appendChild(fullNameDiv);
+      suggestion_wikipage.appendChild(pageDiv);
+      suggestion_wikipage.scrollTop = 0;
+    })
   },
   
   /**
    * Show the attachment results
    */
   _showAttachmentSuggestions : function() {
-	var suggestion_attachment = new Element('div', {'id' : 'suggestion_attachment'});
-	$("suggestion_resultList").insert({bottom: suggestion_attachment});
-	var thisObj =  this;
-	this.attachmentItemValues.each(function(obj, index){
-	  var attachmentDiv = new Element('div', {'class' : 'attachmentItem'});		
-	  var titleDiv = new Element('div', {'class' : 'attachmentItemTitle'});		 
-	  titleDiv.insert(obj);
+    var suggestion_attachment = new Element('div', {'id' : 'suggestion_attachment'});
+    $("suggestion_resultList").insert({bottom: suggestion_attachment});
+    var thisObj =  this;
+    this.attachmentItemValues.each(function(obj, index){
+      var attachmentDiv = new Element('div', {'class' : 'attachmentItem'});		
+      var titleDiv = new Element('div', {'class' : 'attachmentItemTitle'});		 
+      titleDiv.insert(obj);
 	  
       attachmentDiv.appendChild(titleDiv);		
-	  suggestion_attachment.appendChild(attachmentDiv);
-	  suggestion_attachment.scrollTop = 0;
-	})
+      suggestion_attachment.appendChild(attachmentDiv);
+      suggestion_attachment.scrollTop = 0;
+    })
   },  
   
   /** @Overwrite */
   itemClickHandler : function(index, itemList){
-	this.index = index;
-	itemList.each(function(obj) {
-	  obj.removeClassName("itemSelected")
-	});
+    this.index = index;
+    itemList.each(function(obj) {
+      obj.removeClassName("itemSelected")
+    });
   },
   
   /** @Overwrite */
   itemDbClickHandler : function(index, itemList){
-	this.index = index;
-	var results = this.pageItemValues.concat(this.attachmentItemValues);
-	console.debug("selected item value:" + results[index]);
+    this.index = index;
+    var results = this.pageItemValues.concat(this.attachmentItemValues);
+    console.debug("selected item value:" + results[index]);
     document.fire("xwiki:autosuggestion:itemSelected", {selectedValue:results[index]});
-	this.destroy();// todo: this.destroy()
+    this.destroy();// todo: this.destroy()
   },
   
   /** @Overwrite */
   keyNavigateHandler : function(index, itemList){
-	var titleContainerHeight = $("suggestion_title").getHeight(); 
-	var pageContainerHeight = $("suggestion_wikipage") == null ? 0 : $("suggestion_wikipage").getHeight();
-	//console.debug("pageContainerHeight:"+pageContainerHeight);
-	var attachmentContainerHeight = $("suggestion_attachment") == null ? 0 : $("suggestion_attachment").getHeight();
-	//console.debug("attachmentContainerHeight:"+attachmentContainerHeight);
-	var pageItemValuesLength = this.pageItemValues == null ? 0 : this.pageItemValues.length;
-	var attachmentItemValuesLength = this.attachmentItemValues == null ? 0 : this.attachmentItemValues.length;
+    var titleContainerHeight = $("suggestion_title").getHeight(); 
+    var pageContainerHeight = $("suggestion_wikipage") == null ? 0 : $("suggestion_wikipage").getHeight();
+    //console.debug("pageContainerHeight:"+pageContainerHeight);
+    var attachmentContainerHeight = $("suggestion_attachment") == null ? 0 : $("suggestion_attachment").getHeight();
+    //console.debug("attachmentContainerHeight:"+attachmentContainerHeight);
+    var pageItemValuesLength = this.pageItemValues == null ? 0 : this.pageItemValues.length;
+    var attachmentItemValuesLength = this.attachmentItemValues == null ? 0 : this.attachmentItemValues.length;
 	
-	var selectedItem = itemList[index];
-	var relativeTop = selectedItem.positionedOffset().top - titleContainerHeight;	
+    var selectedItem = itemList[index];
+    var relativeTop = selectedItem.positionedOffset().top - titleContainerHeight;	
 	
-	if(this.pageItemValues && index < pageItemValuesLength) {
-	  var scrollTop = $("suggestion_wikipage").scrollTop;
-	  //console.debug("wikipage_relativeTop:"+relativeTop)
-	  //console.debug("wikipage_scrollTop:"+scrollTop)
-	  if(relativeTop <= scrollTop) {
-		$("suggestion_wikipage").scrollTop -= scrollTop - relativeTop;
-	  }
-	  if(relativeTop + selectedItem.getHeight() >= pageContainerHeight+scrollTop) {
-		$("suggestion_wikipage").scrollTop += relativeTop - (pageContainerHeight+scrollTop) + selectedItem.getHeight();
-	  }
-	}
+    if(this.pageItemValues && index < pageItemValuesLength) {
+      var scrollTop = $("suggestion_wikipage").scrollTop;
+      //console.debug("wikipage_relativeTop:"+relativeTop)
+      //console.debug("wikipage_scrollTop:"+scrollTop)
+      if(relativeTop <= scrollTop) {
+ 	$("suggestion_wikipage").scrollTop -= scrollTop - relativeTop;
+      }
+      if(relativeTop + selectedItem.getHeight() >= pageContainerHeight+scrollTop) {
+  	$("suggestion_wikipage").scrollTop += relativeTop - (pageContainerHeight+scrollTop) + selectedItem.getHeight();
+      }
+    }
 	
-	if(this.attachmentItemValues &&  index >= pageItemValuesLength) {
-	  if(index == pageItemValuesLength) {
-		$("suggestion_attachment").scrollTop = 0;
-	  }
-	  var scrollTop = $("suggestion_attachment").scrollTop;
-	  //console.debug("attachment_scrollTop:"+scrollTop)
-	  relativeTop = relativeTop - pageContainerHeight;
-	  //console.debug("attachment_relativeTop:"+relativeTop)
-	  if(relativeTop <= scrollTop) {
-		$("suggestion_attachment").scrollTop -= scrollTop - relativeTop;
-	  }
-	  if(relativeTop + selectedItem.getHeight() >=attachmentContainerHeight+scrollTop) {
-		$("suggestion_attachment").scrollTop += relativeTop - (attachmentContainerHeight+scrollTop) + selectedItem.getHeight();
-	  }
-	}
+    if(this.attachmentItemValues &&  index >= pageItemValuesLength) {
+      if(index == pageItemValuesLength) {
+  	$("suggestion_attachment").scrollTop = 0;
+      }
+      var scrollTop = $("suggestion_attachment").scrollTop;
+      //console.debug("attachment_scrollTop:"+scrollTop)
+      relativeTop = relativeTop - pageContainerHeight;
+      //console.debug("attachment_relativeTop:"+relativeTop)
+      if(relativeTop <= scrollTop) {
+	$("suggestion_attachment").scrollTop -= scrollTop - relativeTop;
+      }
+      if(relativeTop + selectedItem.getHeight() >=attachmentContainerHeight+scrollTop) {
+	$("suggestion_attachment").scrollTop += relativeTop - (attachmentContainerHeight+scrollTop) + selectedItem.getHeight();
+      }
+    }
 	
-	if(this.index >= 0){
-	  itemList[this.index].removeClassName("itemSelected");
-	}
-	itemList[index].addClassName("itemSelected");
-	this.index = index;
-	return false;
+    if(this.index >= 0){
+      itemList[this.index].removeClassName("itemSelected");
+    }
+    itemList[index].addClassName("itemSelected");
+    this.index = index;
+    return false;
   },
   
   /**
@@ -372,21 +371,21 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
    * Bind the events to the suggestion box when the suggestion box is shown
    */
   bindSuggestionBoxEvents : function(){
-	var itemList = this._concatItems();
+    var itemList = this._concatItems();
 	
-	this.onKeyNavigateBound = this.onKeyNavigate.bind(this, itemList);
-	this.editor.obj.observe("keydown", this.onKeyNavigateBound);
-	// Listen to the click and dbclick events;
-	for(var i=0; i < itemList.length; i++){
-	  itemList[i].observe("click", this.onItemClick.bind(this, i, itemList));
-	  itemList[i].observe("dblclick", this.onItemDbClick.bind(this, i, itemList));
-	}
+    this.onKeyNavigateBound = this.onKeyNavigate.bind(this, itemList);
+    this.editor.obj.observe("keydown", this.onKeyNavigateBound);
+    // Listen to the click and dbclick events;
+    for(var i=0; i < itemList.length; i++){
+      itemList[i].observe("click", this.onItemClick.bind(this, i, itemList));
+      itemList[i].observe("dblclick", this.onItemDbClick.bind(this, i, itemList));
+    }
   },
   
   _concatItems : function() {
-	var pageItemList = $$("#suggestion_wikipage div.pageItem");
-	var attachmentItemList = $$("#suggestion_attachment div.attachmentItem");
-	return pageItemList.concat(attachmentItemList);
+    var pageItemList = $$("#suggestion_wikipage div.pageItem");
+    var attachmentItemList = $$("#suggestion_attachment div.attachmentItem");
+    return pageItemList.concat(attachmentItemList);
   },
   
   /**
@@ -394,23 +393,23 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
    * Unbind the events of the suggestion box when the suggestion box is destroyed
    */
   unBindSuggestionBoxEvents : function(){
-	var itemList = this._concatItems();
+    var itemList = this._concatItems();
 	
-	this.editor.obj.stopObserving("keydown", this.onKeyNavigateBound);
-	// Stop listening to the suggestion list
-	for(var i=0; i < itemList.length; i++){
-	  itemList[i].stopObserving('click');
-	  itemList[i].stopObserving('dblclick');
-	}
+    this.editor.obj.stopObserving("keydown", this.onKeyNavigateBound);
+    // Stop listening to the suggestion list
+    for(var i=0; i < itemList.length; i++){
+      itemList[i].stopObserving('click');
+      itemList[i].stopObserving('dblclick');
+    }
   },
   
   /** @Overwrite */
   getSelectedItemValue : function(index){
-	  if(index < this.pageItemValues.length) {
-		return this.pageItemValues[index];
-	  } else {
-		return this.attachmentItemValues[index];
-	  }
+    if(index < this.pageItemValues.length) {
+      return this.pageItemValues[index];
+    } else {
+      return this.attachmentItemValues[index];
+    }
   }
 });
 
@@ -444,43 +443,42 @@ document.observe('xwiki:dom:loaded', function() {
 				 +"<input type='button' id='testRemove' value='Remove suggestion box'/> ");
   
   $("testshow").observe("click", function(event){	
-	var pageResults = $("pageResults").value;
-	if(pageResults == ""){
-	  pageResults = null;
-	}else{
-	  pageResults = pageResults.evalJSON()
-	}
-	var attachmentResults = $("attachmentResults").value
-	if(attachmentResults == ""){
-	  attachmentResults = null;
-	}else{
-	  attachmentResults = attachmentResults.evalJSON()
-	}
-	var results = $H({"pages":pageResults, "attachments":attachmentResults})
+   var pageResults = $("pageResults").value;
+   if(pageResults == ""){
+      pageResults = null;
+   }else{
+      pageResults = pageResults.evalJSON()
+   }
+   var attachmentResults = $("attachmentResults").value
+   if(attachmentResults == ""){
+     attachmentResults = null;
+  }else{
+     attachmentResults = attachmentResults.evalJSON()
+  }
+  var results = $H({"pages":pageResults, "attachments":attachmentResults})
 	
-	var editorOffset = editor.cumulativeOffset();
-	//console.debug(document.viewport.getScrollOffsets());
-	//console.debug(editor.cumulativeOffset());
-	//console.debug(editor.cumulativeScrollOffset());
-    //console.debug(editorOffset);
-    var top = parseInt($("boxtop").value);
-	var left = parseInt($("boxleft").value);
-	var width = parseInt($("boxwidth").value);
-	var height = parseInt($("boxheight").value);
-	if(top<editorOffset.top || top>editorOffset.top+testBox.getHeight() || left<editorOffset.left || left>editorOffset.left+testBox.getWidth()){
-		alert("The position of suggestion box must between top:"+editorOffset.top+" - "+(editorOffset.top+testBox.getHeight())+"  and left:"+editorOffset.left+" - "+(editorOffset.left+testBox.getWidth()));
-		return;
-	}
-	if(suggestionBox == null || suggestionBox.isDestroyed()) {
-		suggestionBox = new XWiki.autosuggestion.LinkSuggestionBox(results, {"top":top, "left":left}, {"width":width, "height":height}, {"type":"wiki", "obj":editor});
-	}
-	suggestionBox.showSuggestions(results, {"top":top, "left":left}, {"width":width, "height":height});
-	editor.focus();
+  var editorOffset = editor.cumulativeOffset();
+  //console.debug(document.viewport.getScrollOffsets());
+  //console.debug(editor.cumulativeOffset());
+  //console.debug(editor.cumulativeScrollOffset());
+  //console.debug(editorOffset);
+  var top = parseInt($("boxtop").value);
+  var left = parseInt($("boxleft").value);
+  var width = parseInt($("boxwidth").value);
+  var height = parseInt($("boxheight").value);
+  if(top<editorOffset.top || top>editorOffset.top+testBox.getHeight() || left<editorOffset.left || left>editorOffset.left+testBox.getWidth()){
+    alert("The position of suggestion box must between top:"+editorOffset.top+" - "+(editorOffset.top+testBox.getHeight())+"  and left:"+editorOffset.left+" - "+(editorOffset.left+testBox.getWidth()));
+    return;
+  }
+  if(suggestionBox == null || suggestionBox.isDestroyed()) {
+    suggestionBox = new XWiki.autosuggestion.LinkSuggestionBox(results, {"top":top, "left":left}, {"width":width, "height":height}, {"type":"wiki", "obj":editor});
+  }
+  suggestionBox.showSuggestions(results, {"top":top, "left":left}, {"width":width, "height":height});
+  editor.focus();
   })
   
   $("testRemove").observe("click", function(event){
-	suggestionBox.destroy();
-	suggestionBox = null;
+   suggestionBox.destroy();
+   suggestionBox = null;
   });
-    //new XWiki.autosuggestion.SuggestionBox();
 });
