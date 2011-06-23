@@ -1,0 +1,14 @@
+To popup an suggestion box, we should only new an suggestion box object first, for example, new a link suggestion box:
+var suggestionBox = new XWiki.atuosuggestion.LinkSuggestionBox(results, position, size, editor)
+and then show the suggestion box by using:
+suggestionBox.showSuggestions(results, position, size)
+results: The suggestion results getting from the backend, it'd better json format
+position: The position object to show the suggestion box, like {top:300, left:490}
+size: The size object of the suggestion box, like {width:200, height:400}
+In order to test the suggestion box functions easily, I wrote an test tool which is embed on the top of the wiki editor. You can config the results, position and size of the suggestion box.
+a) Page Results: please enter a javascript array object which contains the page names of the page list, like ['page1', 'page2','page3'] it represents the suggestion results getting by the ajax from the backend.
+b) Attachment Results: please enter a javascript array object which contains the attachment names of the attachment list, like ['attach1','attach2','attach3']. it represents the suggestion results getting by the ajax from the backend
+c) top/left: Please enter a number, it configs the position of the suggestion box, noted that the suggestion box can only be shown above the editor, so if the top/left value is out of the editor, it will alert a error and mention you to enter a right top/left value in suggested range
+d) width/height: Please enter a number, it configs the size of the suggestion box.
+
+Noted: the data format of the page results and attachment results is temperary.
