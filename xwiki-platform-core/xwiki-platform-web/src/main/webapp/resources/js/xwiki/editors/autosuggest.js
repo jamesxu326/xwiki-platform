@@ -737,5 +737,6 @@ document.observe('xwiki:dom:loaded', function() {
       suggestionBox = null;
     });
   }
-  testImageSuggestionBox();
+  testLinkSuggestionBox();
+  //testImageSuggestionBox();
 });
