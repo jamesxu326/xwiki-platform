@@ -34,6 +34,11 @@ letter-spacing:1.2px;
     font-size:12px;
     color:#000099;
 }
+
+#suggestion_resultList .itemSelected {
+    background-color: #D4E8FF;
+}
+
 /* link suggestion related */
 #suggestion_resultList .pageItem{
     background:url(/xwiki/resources/icons/silk/page_white_text.gif) no-repeat 5px center;
@@ -77,13 +82,57 @@ letter-spacing:1.2px;
     color: #666666;
 }
 
-#suggestion_resultList .itemSelected {
-    background-color: #D4E8FF;
+/* link suggestion related end*/
+
+/* image suggestion related */
+#suggestion_imagePreview{
+    position:absolute;
+    padding:10px;
+    background:#fafce4;
+    width:200px;
+    border: 1px solid #bebebe;
+    border-left: none;
+}
+#suggestion_resultList  #suggestion_images{
+    height:250px;
+    overflow:hidden;
+    overflow-y:auto;
+}
+
+#suggestion_resultList .imageItem{
+    clear : both;
+    cursor: pointer;
+    padding: 5px;
+}
+
+#suggestion_resultList .imageSnapshot{
+    float : left;
+}
+
+#suggestion_resultList .imageSnapshotSize{
+    width: 30px;
+    height: 30px;
+}
+
+#suggestion_resultList .imageDescription{
+    float : left;
+    padding-left:5px;
+}
+
+#suggestion_resultList .imageItemTitle{
+    text-transform: none;
+    color: #666666;
+    font-weight: bolder;
+}
+
+#suggestion_resultList .imageItemFullname{
+    color: #777777;
+    font-size: 90%;
+    font-style: italic;
 }
 
 
-/* link suggestion related end*/
-
+/* image suggestion realted end */
 #suggestion_box_container  #suggestion_toolbar{
     border-top: 1px solid #bebebe;
     padding:3px 0 3px 20px;
