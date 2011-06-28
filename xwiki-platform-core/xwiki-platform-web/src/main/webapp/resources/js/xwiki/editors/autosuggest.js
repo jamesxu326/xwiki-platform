@@ -6,6 +6,208 @@ var XWiki = (function (XWiki) {
 var autosuggestion = XWiki.autosuggestion = XWiki.autosuggestion || {};
 
 /**
+ * The abstract object for suggestor of wiki editors
+ */
+autosuggestion.Suggestor = Class.create({
+  /** The @autosuggestion.WikiEditor object */
+  editor : null,
+  /** The current trigger which is in its context */
+  currentTrigger : null,
+  
+  /**
+   * Initialization: Bind the textarea of the wiki editor
+   * to @autosuggestion.WikiEditor object.
+   */
+  initialize : function(editor) {
+    if(editor ==  null) {
+      return;
+    }
+    this.editor = new autosuggestion.WikiEditor(editor);
+  },
+  
+  /**
+   * Start boot for suggestors; including:
+   * a) Bind the events to the wiki editor to listen to the user inputs
+   */
+  start : function () {
+    if(this.editor == null) return;
+    this.bindEvents();
+  },
+  
+  /**
+   * Destroy the suggestors; including:
+   * a) unBind the events of the wiki editor.
+   */
+  destroy : function() {
+    this.editor = null;
+    this.unBindEvents();
+  },
+
+  bindEvents : function() {
+    this.editor.getTextArea().observe("keyup", this.onKeyup.bind(this));
+  },
+
+  unBindEvents : function() {
+    this.editor.getTextArea().stopObserve("keyup");
+  },
+
+  onKeyup : function() {
+    this.suggest();
+  },
+  
+  /**  
+   * Give suggestion results.
+   */
+  suggest : function() {
+    // To overwrite
+  },
+
+  /**  
+   * Get the text of between the position of trigger and  
+   * the position of current cursor position to be the query
+   * for suggestion.
+   * @Param triggerPos The trigger position
+   * @Param currentPos The current position of the cursor
+   */
+  getQuery : function(triggerPos, currentPos) {
+    return this.editor.getTextByPosition(triggerPos, currentPos);
+  },
+
+  /**  
+   * Determin whether the current cursor position is in the context of the 
+   * current trigger.
+   */
+  decideContext : function() {
+    var currentPos = this.editor.getCursorPosition();
+    if(currentPos < this.currentTrigger.pos) {
+      return false;
+    }
+    return true;
+  },
+
+  /**  
+   * Determin whether the trigger is triggered when user typing.
+   * @param trigger The trigger name.
+   */
+  isTrigger : function(trigger) {
+    var cursorPos = this.editor.getCursorPosition();
+    var txtValueBeforeTrigger = this.editor.getTextByPosition(0, cursorPos);
+    var val = txtValueBeforeTrigger.slice(-trigger.length);
+    if(val == trigger) {
+      return true;
+    }
+    return false;
+  }
+});
+
+/**  
+ * Suggestor for link suggestion
+ */
+autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
+  /** The trigger for link*/
+  linkTrigger : {trigger:"[[", pos:-1},
+  
+  initialize : function($super, editor) {
+    $super(editor);
+  },
+  
+  /** @Overwrite */  
+  suggest : function() {
+    // Decide whether link trigger "[[" is triggered
+    if(this.isTrigger(this.linkTrigger.trigger)) { 
+      // Update the trigger positon
+      this.linkTrigger.pos = this.editor.getCursorPosition();
+      // Set the currentTrigger is link trigger, then it enters
+      // the context of the link trigger
+      this.currentTrigger = this.linkTrigger;
+    }
+    if(this.currentTrigger == null){
+      return;
+    } 
+    // Switch to different actions according to the current
+    // trigger context.
+    // Notice : There might be some other triggers under link
+    // trigger context, like ">>","attach:","@" and "||"
+    switch(this.currentTrigger.trigger) {
+      case this.linkTrigger.trigger:
+        this._actionLinkTriggered();
+	break;
+    }
+  },
+  
+  /**  
+   * The action executed when link trigger is triggered.
+   */
+  _actionLinkTriggered : function() {
+    // Decide whether is under the context of the current trigger
+    // There are several situations that when the current trigger 
+    // is not changed, but the cursor is out of the current trigger
+    // context. For example: onclick - move the cursor to other position
+    // pageDown and pageUp... 
+    if(!this.decideContext()) {
+      console.debug("Out of the [[ trigger context, waiting...");
+      this.currentTrigger = null;
+      return;
+    }
+    var currentPos = this.editor.getCursorPosition();
+    var query = this.getQuery(this.linkTrigger.pos, currentPos);
+    console.debug("query for trigger [[:" + query);
+  }
+});
+
+/**  
+ * The wrapper for wiki editors, there are many useful functions 
+ * that add to the plain textArea object.
+ */
+autosuggestion.WikiEditor = Class.create({
+  /** The textarea object of the wiki object*/
+  textArea: null,
+ 
+  initialize : function(textArea) {
+    typeof textArea == "string" ? this.textArea = $(textArea) : this.textArea = textArea;
+    if(textArea ==  null) {
+      return;
+    }
+  },
+
+  getTextArea : function() {
+    return this.textArea;
+  },
+  
+  /**  
+   * Get the cursor position in the textarea. 
+   */
+  getCursorPosition : function() {
+    if(document.selection){ // If the browser has document.selection object, like ie
+      this.textArea.focus();
+      var ds = document.selection;
+      var range = null;
+      range = ds.createRange();
+      var storedRange = range.duplicate();
+      storedRange.moveToElementText(this.textArea);
+      storedRange.setEndPoint("EndToEnd", range);
+      this.textArea.selectionStart = storedRange.text.length - range.text.length;
+      this.textArea.selectionEnd = this.textArea.selectionStart + range.text.length;
+      return this.textArea.selectionStart;
+    }else{ // Firefox
+      return this.textArea.selectionStart;
+    }
+  },
+
+  /**  
+   * Get the text in the teatarea from start to end
+   * @Param start The start position of the text 
+   * @Param end The end position of the text
+   */
+  getTextByPosition : function(start, end) { 
+    if(start == null && end == null) return this.textArea.value;
+    if(end == null) end = this.textArea.value.length-1;
+    return this.textArea.value.substring(start, end);
+  } 
+});
+
+
+/**
  * Suggestion Box is used to hold the suggestion list for auto suggestion
  */
 autosuggestion.SuggestionBox = Class.create({
