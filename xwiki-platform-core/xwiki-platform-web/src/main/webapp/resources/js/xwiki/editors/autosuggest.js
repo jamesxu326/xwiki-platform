@@ -939,6 +939,12 @@ document.observe('xwiki:dom:loaded', function() {
       suggestionBox = null;
     });
   }
-  testLinkSuggestionBox();
+
+  var testSuggestor = function() {
+    var linkSuggestor = new XWiki.autosuggestion.LinkSuggestor("content");
+    linkSuggestor.start();
+  }
+  //testLinkSuggestionBox();
   //testImageSuggestionBox();
+  testSuggestor();
 });
