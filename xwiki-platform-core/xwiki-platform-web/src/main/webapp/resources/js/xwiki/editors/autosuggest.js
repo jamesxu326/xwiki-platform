@@ -13,7 +13,9 @@ autosuggestion.Suggestor = Class.create({
   editor : null,
   /** The current trigger which is in its context */
   currentTrigger : null,
-  
+  /** The suggestion box for showing the suggestion results */
+  suggestionBox : null,
+
   /**
    * Initialization: Bind the textarea of the wiki editor
    * to @autosuggestion.WikiEditor object.
@@ -23,6 +25,7 @@ autosuggestion.Suggestor = Class.create({
       return;
     }
     this.editor = new autosuggestion.WikiEditor(editor);
+    this.editor.addMask();
   },
   
   /**
@@ -62,6 +65,31 @@ autosuggestion.Suggestor = Class.create({
    * Give suggestion results.
    */
   suggest : function() {
+    // To overwrite
+  },
+  
+  /**  
+   * Show the suggestion result list.
+   * @Param query The query for suggestion list.
+   */
+  showSuggestions : function(query) {
+    // Calculate the offset position of the suggestion box
+    var markOffset = this.editor.getMarkOffset();
+    var scrollTop = this.editor.getScrollTop();
+    //suggestio box position, actually it is the mask position position which is represent the position of trigger.
+    var position = {"top" : markOffset.top + 15 - scrollTop, "left" : markOffset.left + 8};
+    
+    // Todo: the size should adjust to the content, instead of fixing
+    var size = {"width" : 300, "height" : 400};
+    // Get the suggestions and show.
+    this._showSuggestionResults(query, position, size);
+  },
+  
+  /**
+   * Get the suggestion results and show, it should be overwritten
+   * by the specific suggestors.
+   */
+  _showSuggestionResults : function(query, position, size) {
     // To overwrite
   },
 
@@ -116,6 +144,10 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       // Set the currentTrigger is link trigger, then it enters
       // the context of the link trigger
       this.currentTrigger = this.linkTrigger;
+      // Destroy the existed suggestion box.
+      if(this.suggestionBox != null) {
+        this.suggestionBox.destroy();
+      }
     }
     if(this.currentTrigger == null){
       return;
@@ -131,6 +163,30 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     }
   },
   
+  _showSuggestionResults : function(query, position, size) {
+    console.debug("query for suggestions:" + query);
+    if(query == null) return;
+    new Ajax.Request("/xwiki/bin/view/Main/queryJson?xpage=plain&outputSyntax=plain", {
+      method : 'get',
+      parameters : query,
+      onSuccess : this._onSuccess.bind(this, position, size),
+      onFailure : this._onFailure.bind(this)
+    });
+  },
+  
+  _onSuccess : function(position, size, response) { 
+    var resultList = $H(response.responseText.evalJSON(true));
+    if(this.suggestionBox == null || this.suggestionBox.isDestroyed()) {
+      this.suggestionBox = new autosuggestion.LinkSuggestionBox(resultList, position, size, {"type":"wiki", "obj":this.editor.getTextArea()});
+    }
+    this.suggestionBox.showSuggestions(resultList, position, size);
+  },
+  
+  _onFailure : function(response) {
+    console.debug("suggestion failures:");
+    console.debug(response);
+  },
+
   /**  
    * The action executed when link trigger is triggered.
    */
@@ -145,9 +201,13 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       this.currentTrigger = null;
       return;
     }
+    this.editor.updateMask(this.linkTrigger);
+    // Get the value user typed after the trigger as the query for suggestion
     var currentPos = this.editor.getCursorPosition();
     var query = this.getQuery(this.linkTrigger.pos, currentPos);
     console.debug("query for trigger [[:" + query);
+    // Show the suggestion box for suggestion results.
+    this.showSuggestions(query);
   }
 });
 
