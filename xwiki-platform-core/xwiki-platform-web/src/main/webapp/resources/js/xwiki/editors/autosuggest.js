@@ -44,11 +44,14 @@ autosuggestion.Suggestor = Class.create({
   },
 
   bindEvents : function() {
-    this.editor.getTextArea().observe("keyup", this.onKeyup.bind(this));
+    // In order to unbind the specific event.
+    // see http://api.prototypejs.org/dom/Event/stopObserving/
+    this.onKeyupAvartar = this.onKeyup.bind(this);
+    this.editor.getTextArea().observe("keyup", this.onKeyupAvartar);
   },
 
   unBindEvents : function() {
-    this.editor.getTextArea().stopObserve("keyup");
+    this.editor.getTextArea().stopObserve("keyup", this.onKeyupAvartar);
   },
 
   onKeyup : function() {
@@ -78,11 +81,7 @@ autosuggestion.Suggestor = Class.create({
    * current trigger.
    */
   decideContext : function() {
-    var currentPos = this.editor.getCursorPosition();
-    if(currentPos < this.currentTrigger.pos) {
-      return false;
-    }
-    return true;
+    return this.editor.getCursorPosition() >= this.currentTrigger.pos;
   },
 
   /**  
@@ -93,10 +92,7 @@ autosuggestion.Suggestor = Class.create({
     var cursorPos = this.editor.getCursorPosition();
     var txtValueBeforeTrigger = this.editor.getTextByPosition(0, cursorPos);
     var val = txtValueBeforeTrigger.slice(-trigger.length);
-    if(val == trigger) {
-      return true;
-    }
-    return false;
+    return val == trigger;
   }
 });
 
@@ -164,8 +160,8 @@ autosuggestion.WikiEditor = Class.create({
   textArea: null,
  
   initialize : function(textArea) {
-    typeof textArea == "string" ? this.textArea = $(textArea) : this.textArea = textArea;
-    if(textArea ==  null) {
+    this.textArea = $(textArea);
+    if(this.textArea ==  null) {
       return;
     }
   },
