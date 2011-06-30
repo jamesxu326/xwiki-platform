@@ -158,6 +158,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
 autosuggestion.WikiEditor = Class.create({
   /** The textarea object of the wiki object*/
   textArea: null,
+  mask : null,
  
   initialize : function(textArea) {
     this.textArea = $(textArea);
@@ -170,6 +171,13 @@ autosuggestion.WikiEditor = Class.create({
     return this.textArea;
   },
   
+  /** 
+   * Get the scrollTop value of the textarea
+   */
+  getScrollTop : function() {
+    return this.textArea.scrollTop;
+  },
+
   /**  
    * Get the cursor position in the textarea. 
    */
@@ -191,6 +199,23 @@ autosuggestion.WikiEditor = Class.create({
   },
 
   /**  
+   * Set the cursor position in the textarea. 
+   */
+  setCursorPosition : function(position) {
+    var n = position == "end"? this.textArea.value.length : position;
+    if(document.selection){
+      var range = t.createTextRange();
+      range.moveEnd("character", -this.textArea.value.length);
+      range.moveEnd("character", n);
+      range.moveStart("character", n);
+      range.select();
+    }else{
+      this.textArea.setSelectionRange(n, n);
+      this.textArea.focus();
+    }
+  },
+  
+  /**  
    * Get the text in the teatarea from start to end
    * @Param start The start position of the text 
    * @Param end The end position of the text
@@ -199,7 +224,117 @@ autosuggestion.WikiEditor = Class.create({
     if(start == null && end == null) return this.textArea.value;
     if(end == null) end = this.textArea.value.length-1;
     return this.textArea.value.substring(start, end);
-  } 
+  },
+ 
+  /**  
+   * Get offset position and size of the textarea. 
+   */
+  getEditorOffset : function() {
+    var offsetPosition = this.textArea.cumulativeOffset();
+    var offsetWidth = this.textArea.getWidth();
+    var offsetHeight = this.textArea.getHeight();
+    return {"top" : offsetPosition.top, "left" : offsetPosition.left, "width":offsetWidth, "height":offsetHeight};
+
+  },
+
+  /**  
+   * Add the mask which duplicates the content of the textarea
+   * It is above the textarea, with the same offset positions, styles
+   * and size. But the z-index is under the textarea and the visibility
+   * is hidden. 
+   * With the mask's help we can get the trigger offset positions which 
+   * is neccessary for showing the suggestion box in the right place beside
+   * the trigger.
+   */
+  addMask : function() {
+    if (this.mask == null) {
+      this.mask = new Element('div', {'class':'suggestion_mask'});
+
+      var info = this.getEditorOffset();
+
+      this.mask.setStyle({
+        top: info.top + "px",
+        left: info.left + "px",
+        width: info.width + "px",
+        height: info.height + "px"
+      });
+
+      this.mask.scrollTop = 0;
+      document.body.appendChild(this.mask);
+    }
+    this._updateMaskOffset();
+  },
+
+  /**  
+   * Update the mask, include two things:
+   * 1) Update the content of the mask. see @_updateMaskContent(trigger);
+   * 2) Update the offset of the mask. see @_updateMaskOffset();
+   */
+  updateMask : function(trigger) {
+    this._updateMaskContent(trigger);
+    this._updateMaskOffset();
+  },
+
+  /**  
+   * Update the content to syncronized with the textarea when suggestion 
+   * is triggered before suggestion box is shown, and also add the mark of
+   * which holds the trigger. 
+   * In order to get the trigger's offset positon, the trigger will be
+   * marked by surrounding with <span id="suggestion_mark">trigger</span>,
+   * for example <span id="suggestion_mark">[[</span>, then when deciding
+   * the offset position of the trigger, it should only get the position of
+   * the surrounded "span" mark.
+   * @Param trigger The trigger which is triggered currently.
+   */
+  _updateMaskContent : function(trigger) {
+    var html = "";
+    // Set the value of textarea before trigger
+    html += this.getTextByPosition(0, trigger.pos - trigger.trigger.length).replace(/\n/g, '<br/>').replace(/\s/g, '&nbsp;');
+    // Surround the trigger with mark
+    html += "<span id='suggestion_mark'>" + trigger.trigger + "</span>"
+    // Set the value of textarea after trigger
+    html += this.getTextByPosition(trigger.pos, this.textArea.value.length).replace(/\n/g, '<br/>').replace(/\s/g, '&nbsp;');
+    // Update mask above the textarea
+    this.mask.update(html);
+  },
+
+  /**  
+   * Update the Mask, include position, scrollTop and the styles which should be the same with text area.
+   */
+  _updateMaskOffset : function() {
+    var textAreaFontFamily = this.textArea.getStyle("font-family");
+    var textAreaLineHeight = this.textArea.getStyle("line-height");
+
+    var info = this.getEditorOffset();
+
+    this.mask.setStyle({
+      fontFamily : textAreaFontFamily,
+      lineHeight : textAreaLineHeight,
+      top: info.top + "px",
+      left: info.left + "px",
+      width: info.width + "px",
+      height: info.height + "px"
+    });
+
+    this.mask.scrollTop = this.textArea.scrollTop;
+  },
+  
+  /**  
+   * Get offset of the "span" mark of the trigger.
+   * It is represented the position of the suggestion box.
+   */
+  getMarkOffset : function() {
+    return $("suggestion_mark") == null ? null : $("suggestion_mark").cumulativeOffset();
+  },
+  
+  /**  
+   * Get the query after trigger.
+   * @Param triggerPos The trigger position
+   * @Param currentPos the current cursor position
+   */
+  getQuery : function(triggerPos, currentPos) {
+    return this.client.textArea.value.substring(triggerPos, currentPos);
+  }
 });
 
 
