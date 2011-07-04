@@ -373,8 +373,6 @@ autosuggestion.WikiEditor = Class.create({
    */
   getMarkOffset : function() {
     return $("suggestion_mark") == null ? null : $("suggestion_mark").cumulativeOffset();
-  },
-  
   }
 });
 
