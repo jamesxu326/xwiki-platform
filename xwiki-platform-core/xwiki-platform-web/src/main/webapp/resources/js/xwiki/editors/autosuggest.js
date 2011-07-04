@@ -49,12 +49,12 @@ autosuggestion.Suggestor = Class.create({
   bindEvents : function() {
     // In order to unbind the specific event.
     // see http://api.prototypejs.org/dom/Event/stopObserving/
-    this.onKeyupAvartar = this.onKeyup.bind(this);
-    this.editor.getTextArea().observe("keyup", this.onKeyupAvartar);
+    this.onKeyupAvatar = this.onKeyup.bind(this);
+    this.editor.getTextArea().observe("keyup", this.onKeyupAvatar);
   },
 
   unBindEvents : function() {
-    this.editor.getTextArea().stopObserve("keyup", this.onKeyupAvartar);
+    this.editor.getTextArea().stopObserving("keyup", this.onKeyupAvatar);
   },
 
   onKeyup : function() {
@@ -168,14 +168,14 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     if(query == null) return;
     new Ajax.Request("/xwiki/bin/view/Main/queryJson?xpage=plain&outputSyntax=plain", {
       method : 'get',
-      parameters : query,
+      parameters : {"query":query},
       onSuccess : this._onSuccess.bind(this, position, size),
       onFailure : this._onFailure.bind(this)
     });
   },
   
   _onSuccess : function(position, size, response) { 
-    var resultList = $H(response.responseText.evalJSON(true));
+    var resultList = $H(response.responseJSON);
     if(this.suggestionBox == null || this.suggestionBox.isDestroyed()) {
       this.suggestionBox = new autosuggestion.LinkSuggestionBox(resultList, position, size, {"type":"wiki", "obj":this.editor.getTextArea()});
     }
@@ -293,8 +293,7 @@ autosuggestion.WikiEditor = Class.create({
     var offsetPosition = this.textArea.cumulativeOffset();
     var offsetWidth = this.textArea.getWidth();
     var offsetHeight = this.textArea.getHeight();
-    return {"top" : offsetPosition.top, "left" : offsetPosition.left, "width":offsetWidth, "height":offsetHeight};
-
+    return {"top":offsetPosition.top, "left":offsetPosition.left, "width":offsetWidth, "height":offsetHeight};
   },
 
   /**  
@@ -309,17 +308,6 @@ autosuggestion.WikiEditor = Class.create({
   addMask : function() {
     if (this.mask == null) {
       this.mask = new Element('div', {'class':'suggestion_mask'});
-
-      var info = this.getEditorOffset();
-
-      this.mask.setStyle({
-        top: info.top + "px",
-        left: info.left + "px",
-        width: info.width + "px",
-        height: info.height + "px"
-      });
-
-      this.mask.scrollTop = 0;
       document.body.appendChild(this.mask);
     }
     this._updateMaskOffset();
@@ -387,13 +375,6 @@ autosuggestion.WikiEditor = Class.create({
     return $("suggestion_mark") == null ? null : $("suggestion_mark").cumulativeOffset();
   },
   
-  /**  
-   * Get the query after trigger.
-   * @Param triggerPos The trigger position
-   * @Param currentPos the current cursor position
-   */
-  getQuery : function(triggerPos, currentPos) {
-    return this.client.textArea.value.substring(triggerPos, currentPos);
   }
 });
 
