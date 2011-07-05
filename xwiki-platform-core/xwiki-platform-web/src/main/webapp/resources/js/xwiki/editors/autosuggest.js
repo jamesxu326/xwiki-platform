@@ -395,7 +395,11 @@ autosuggestion.SuggestionBox = Class.create({
   /** The Html template for suggestion box container */
   /*containerHtmlTemplate : '<div id="suggestion_box_container">'
   	+'<div id="suggestion_box" class="container">'
-	  +'<div id="suggestion_title"></div>'
+	  +'<div id="suggestion_head">
+             +'<div id="suggestion_title"></div>'
+             +'<div id='suggestion_close'></div>'
+             +'<div style='clear:both'></div>'
+          +'</div>'
 	  +'<div id="suggestion_resultList"></div>'
 	  +'<div id="suggestion_toolbar"></div>'
 	+'</div>'
@@ -415,8 +419,15 @@ autosuggestion.SuggestionBox = Class.create({
     var suggestion_box = new Element('div', {'class' : 'container', 'id' : 'suggestion_box'});
     suggestion_box_container.appendChild(suggestion_box);
     // The title container of suggestion box
+    var suggestion_head = new Element('div', {'id' : 'suggestion_head'});
+    suggestion_box.appendChild(suggestion_head);
     var suggestion_title = new Element('div', {'id' : 'suggestion_title'});
-    suggestion_box.appendChild(suggestion_title);
+    var suggestion_close = new Element('div', {'id' : 'suggestion_close'});
+    var suggestion_clear = new Element('div', {'style' : 'clear:both'});
+    suggestion_head.appendChild(suggestion_title);
+    suggestion_head.appendChild(suggestion_close);
+    suggestion_head.appendChild(suggestion_clear);
+    suggestion_close.observe('click', this.close.bind(this));
     // The suggestion list container of the suggestion box
     var suggestion_resultList = new Element('div', {'id' : 'suggestion_resultList'});
     suggestion_box.appendChild(suggestion_resultList);
@@ -440,6 +451,16 @@ autosuggestion.SuggestionBox = Class.create({
     // Remove the suggestion box
     this.unBindSuggestionBoxEvents();
     $('suggestion_box_container').remove();
+  },
+  
+  /**
+   * Close suggestion box when user click on the close icon: 
+   */
+  close : function() {
+    // Destroy the suggestion box;
+    this.destroy();
+    // Focus the editor;
+    this.editor.obj.focus();
   },
   
   /**
@@ -694,7 +715,7 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
   
   /** @Overwrite */
   keyNavigateHandler : function(index, itemList){
-    var titleContainerHeight = $("suggestion_title").getHeight(); 
+    var titleContainerHeight = $("suggestion_head").getHeight(); 
     var pageContainerHeight = $("suggestion_wikipage") == null ? 0 : $("suggestion_wikipage").getHeight();
     //console.debug("pageContainerHeight:"+pageContainerHeight);
     var attachmentContainerHeight = $("suggestion_attachment") == null ? 0 : $("suggestion_attachment").getHeight();
@@ -896,9 +917,9 @@ autosuggestion.ImageSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
       return;
     }
     if(imagePreview == null) {
-      var top = this.position.top + $("suggestion_title").getHeight();
+      var top = this.position.top + $("suggestion_head").getHeight();
       var left = this.position.left + $("suggestion_box_container").getWidth();
-      var height = $("suggestion_resultList").getHeight() - $("suggestion_title").getHeight();
+      var height = $("suggestion_resultList").getHeight() - $("suggestion_head").getHeight();
       imagePreview = new Element('div', {'id' : 'suggestion_imagePreview', 'style':'top:'+ top +'px; left:'+ left +'px; height:'+ height +'px'});
       document.body.appendChild(imagePreview);
     }
@@ -925,7 +946,7 @@ autosuggestion.ImageSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
 
   /** @Overwrite */
   keyNavigateHandler : function(index, itemList){
-    var titleContainerHeight = $("suggestion_title").getHeight();
+    var titleContainerHeight = $("suggestion_head").getHeight();
     var imageContainerHeight = $("suggestion_images") == null ? 0 : $("suggestion_images").getHeight();
     //console.debug("imageContainerHeight:"+imageContainerHeight);
     var imageItemValuesLength = this.imageItemValues == null ? 0 : this.imageItemValues.length;
