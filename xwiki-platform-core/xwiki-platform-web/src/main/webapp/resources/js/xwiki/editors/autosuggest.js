@@ -430,6 +430,10 @@ autosuggestion.WikiEditor = Class.create({
    * 2) Update the offset of the mask. see @_updateMaskOffset();
    */
   updateMask : function(trigger) {
+    // It is for fullscreen, the display of mask will be set to none by default
+    // in order to get get the mark's position, the display of mask should always
+    // keep block;
+    this.mask.show();
     this._updateMaskContent(trigger);
     this._updateMaskOffset();
   },
@@ -463,15 +467,16 @@ autosuggestion.WikiEditor = Class.create({
   _updateMaskOffset : function() {
     var textAreaFontFamily = this.textArea.getStyle("font-family");
     var textAreaLineHeight = this.textArea.getStyle("line-height");
-
+    var textAreaLetterSpacing = this.textArea.getStyle("letter-spacing");
     var info = this.getEditorOffset();
 
     this.mask.setStyle({
       fontFamily : textAreaFontFamily,
       lineHeight : textAreaLineHeight,
+      letterSpacing : textAreaLetterSpacing,
       top: info.top + "px",
       left: info.left + "px",
-      width: info.width + "px",
+      width: (info.width-3) + "px",
       height: info.height + "px"
     });
 

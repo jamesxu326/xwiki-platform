@@ -11,6 +11,7 @@ word-wrap:break-word;
 /* CSS container shadow */
 #suggestion_box_container {
    position:absolute;
+   z-index:2000;
 }
 #suggestion_box_container .container {
     position:relative;
