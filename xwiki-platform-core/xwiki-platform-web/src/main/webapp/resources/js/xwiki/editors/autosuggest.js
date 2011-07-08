@@ -275,7 +275,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   },
   
   _showSuggestionResults : function(query, position, size) {
-    console.debug("query for suggestions:" + query);
     if(query == null) return;
     new Ajax.Request("/xwiki/bin/view/Main/queryJson?xpage=plain&outputSyntax=plain", {
       method : 'get',
@@ -529,6 +528,7 @@ autosuggestion.SuggestionBox = Class.create({
       return;
     }
     this.editor = editor;
+    this.index = -1;
     // The container of the suggestion box
     var suggestion_box_container = new Element('div', {'id' : 'suggestion_box_container'});
     // The suggestion box
