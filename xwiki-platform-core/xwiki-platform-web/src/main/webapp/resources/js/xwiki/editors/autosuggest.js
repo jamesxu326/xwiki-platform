@@ -15,6 +15,8 @@ autosuggestion.Suggestor = Class.create({
   currentTrigger : null,
   /** The suggestion box for showing the suggestion results */
   suggestionBox : null,
+  /** Record the mouse position*/
+  mousePos : null,
 
   /**
    * Initialization: Bind the textarea of the wiki editor
@@ -39,11 +41,16 @@ autosuggestion.Suggestor = Class.create({
   
   /**
    * Destroy the suggestors; including:
-   * a) unBind the events of the wiki editor.
+   * a) Destroy the suggestion box if it exists;
+   * b) Set the currentTrigger to be null;
    */
   destroy : function() {
-    this.editor = null;
-    this.unBindEvents();
+   // this.unBindEvents();
+    if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
+      this.suggestionBox.destroy();
+    }
+    this.currentTrigger = null;
+    //this.editor = null;
   },
 
   bindEvents : function() {
@@ -51,10 +58,52 @@ autosuggestion.Suggestor = Class.create({
     // see http://api.prototypejs.org/dom/Event/stopObserving/
     this.onKeyupAvatar = this.onKeyup.bind(this);
     this.editor.getTextArea().observe("keyup", this.onKeyupAvatar);
+    this.onClickAvatar = this.onClick.bind(this);
+    this.editor.getTextArea().observe("click", this.onClickAvatar);
+    // Record the mouse position in the body
+    this.onBodyMouseMoveAvatar = this.onBodyMouseMove.bind(this);
+    $(document.body).observe("mousemove", this.onBodyMouseMoveAvatar);
+    this.onBlurAvatar = this.onBlur.bind(this);
+    this.editor.getTextArea().observe("blur", this.onBlurAvatar);
   },
 
   unBindEvents : function() {
     this.editor.getTextArea().stopObserving("keyup", this.onKeyupAvatar);
+    this.editor.getTextArea().stopObserving("click", this.onClickAvatar);
+    $(document.body).stopObserving("mousemove", this.onBodyMouseMoveAvatar);
+    this.editor.getTextArea().stopObserving("blur", this.onBlurAvatar);
+  },
+ 
+  /**
+   * If click on the editor, the suggestor will be destroyed
+   * if it exists.
+   */ 
+  onClick : function(event) {
+    this.destroy();
+  },
+  
+  /**
+   * Record the mouse position on the body.
+   */
+  onBodyMouseMove : function(event) {
+    this.mousePos = {"top":event.pageY, "left":event.pageX};
+  },
+
+  /** 
+   * When user unfocus on the editor, the suggestor will be destroyed
+   * except when user focus on the suggestion box.
+   */
+  onBlur : function(event) {
+    if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
+      var boxPos = this.suggestionBox.getPosition();
+      // If the mouse position is in the range of the suggestion box, the suggestor should not
+      // be destroyed.
+      if(this.mousePos.top > boxPos.top && this.mousePos.top < boxPos.top + boxPos.height &&
+         this.mousePos.left > boxPos.left && this.mousePos.left < boxPos.left + boxPos.width) {
+        return;
+      }
+    }
+    this.destroy();
   },
 
   onKeyup : function() {
@@ -475,8 +524,21 @@ autosuggestion.SuggestionBox = Class.create({
       "top": position.top + "px",
       "left": position.left + "px",
       "width": size.width + "px",
-      "height": size.height + "px"
+      "height": size.height + "px",
     });
+  },
+  
+  /**
+   * Get the position and the size of the suggestion box 
+   */
+  getPosition : function() {
+    if($("suggestion_box_container") == null) {
+      return;
+    }
+    var offsetPosition = $("suggestion_box_container").cumulativeOffset();
+    var offsetWidth = $("suggestion_box_container").getWidth();
+    var offsetHeight = $("suggestion_box_container").getHeight();
+    return {"top":offsetPosition.top, "left":offsetPosition.left, "width":offsetWidth, "height":offsetHeight};
   },
   
   isDestroyed : function(){
