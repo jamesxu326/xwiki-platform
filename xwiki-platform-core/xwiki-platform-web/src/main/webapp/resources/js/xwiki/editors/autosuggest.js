@@ -5,6 +5,44 @@ var XWiki = (function (XWiki) {
 // Start XWiki augmentation.
 var autosuggestion = XWiki.autosuggestion = XWiki.autosuggestion || {};
 
+var EVENTKEYS = {
+  KEY_BACKSPACE: 8,
+  KEY_TAB: 9,
+  KEY_RETURN: 13,
+  KEY_ESC: 27,
+  KEY_LEFT: 37,
+  KEY_UP: 38,
+  KEY_RIGHT: 39,
+  KEY_DOWN: 40,
+  KEY_PRIOR: 33,
+  KEY_NEXT: 34,
+  KEY_DELETE: 46,
+  KEY_HOME: 36,
+  KEY_END: 35,
+  KEY_PAGEUP: 33,
+  KEY_PAGEDOWN: 34,
+  KEY_INSERT: 45,
+  KEY_PRINT: 42,
+  KEY_PAUSE: 19,
+  KEY_NUMLOCK: 136,
+  KEY_TAB: 9,
+  KEY_CAPSLOCK: 20,
+  KEY_SHIFT: 16,
+  KEY_ALT: 18,
+  KEY_CONTROL: 17,
+  KEY_F1: 112,
+  KEY_F2: 113,
+  KEY_F3: 114,
+  KEY_F4: 115,
+  KEY_F5: 116,
+  KEY_F6: 117,
+  KEY_F7: 118,
+  KEY_F8: 119,
+  KEY_F9: 120,
+  KEY_F10: 121,
+  KEY_F11: 122,
+  KEY_F12: 123
+}
 /**
  * The abstract object for suggestor of wiki editors
  */
@@ -106,8 +144,32 @@ autosuggestion.Suggestor = Class.create({
     this.destroy();
   },
 
-  onKeyup : function() {
-    this.suggest();
+  onKeyup : function(event) {
+    var code = event.keyCode;
+    // If left, right key is pressed, the suggestion box show not be instantiated
+    // or should be destroyed if it has been intantiated.
+    // left, right, esc, tab, pageup, pagedown, home, end, prior, next
+    if(code == 0 || code == EVENTKEYS.KEY_LEFT || code == EVENTKEYS.KEY_RIGHT || code == EVENTKEYS.KEY_ESC || 
+       code == EVENTKEYS.KEY_TAB || code == EVENTKEYS.KEY_PAGEUP || code == EVENTKEYS.KEY_PAGEDOWN ||
+       code == EVENTKEYS.KEY_HOME || code == EVENTKEYS.KEY_END || code == EVENTKEYS.PRIOR || 
+       code == EVENTKEYS.KEY_NEXT) {
+      if(!this.suggestionBox.isDestroyed()) {
+        this.suggestionBox.destroy();
+      }
+      return;
+    }
+    // Suggestion should not be executed if the following keys are typed;
+    // F1~F12, up, down, return, shift, ctrl, alt, insert, capslock, fn, print screen, pause, delete, numlock
+    if(code != EVENTKEYS.KEY_UP && code != EVENTKEYS.KEY_DOWN && code != EVENTKEYS.KEY_RETURN &&
+       code != EVENTKEYS.KEY_SHIFT && code != EVENTKEYS.KEY_ALT && code != EVENTKEYS.KEY_CAPSLOCK &&
+       code != EVENTKEYS.KEY_PRINT && code != EVENTKEYS.KEY_PAUSE && code != EVENTKEYS.KEY_DELETE &&
+       code != EVENTKEYS.KEY_NUMLOCK && code != EVENTKEYS.KEY_CONTROL && code != EVENTKEYS.KEY_INSERT &&
+       code != EVENTKEYS.KEY_F1 && code != EVENTKEYS.KEY_F2 && code != EVENTKEYS.KEY_F3 &&
+       code != EVENTKEYS.KEY_F4 && code != EVENTKEYS.KEY_F5 && code != EVENTKEYS.KEY_F6 &&
+       code != EVENTKEYS.KEY_F7 && code != EVENTKEYS.KEY_F8 && code != EVENTKEYS.KEY_F9 &&
+       code != EVENTKEYS.KEY_F10 && code != EVENTKEYS.KEY_F11 && code != EVENTKEYS.KEY_F12) { 
+      this.suggest();
+    }
   },
   
   /**  
@@ -589,14 +651,14 @@ autosuggestion.SuggestionBox = Class.create({
         console.debug("selected item value:" + selectedValue);
         document.fire("xwiki:autosuggestion:itemSelected", {selectedValue:selectedValue});
         this.destroy();
+        Event.stop(event);  
         return false;
         break;
       default:
         return true;
     }
-	  
-    i = i >= itemList.length ? 0 : i< 0 ? itemList.length-1 : i;
     Event.stop(event);
+    i = i >= itemList.length ? 0 : i< 0 ? itemList.length-1 : i;
     return this.keyNavigateHandler(i, itemList);
   },
   
