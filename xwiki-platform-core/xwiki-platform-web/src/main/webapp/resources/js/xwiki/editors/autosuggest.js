@@ -321,6 +321,8 @@ autosuggestion.WikiEditor = Class.create({
     if(this.textArea ==  null) {
       return;
     }
+    // Reset css for editor
+    this.textArea.addClassName("suggestion_editor");
   },
 
   getTextArea : function() {
@@ -436,10 +438,15 @@ autosuggestion.WikiEditor = Class.create({
    */
   _updateMaskContent : function(trigger) {
     var html = "";
+    var query = this.getTextByPosition(trigger.pos, this.getCursorPosition());
     // Set the value of textarea before trigger
-    html += this.getTextByPosition(0, trigger.pos - trigger.trigger.length).replace(/\n/g, '<br/>').replace(/\s/g, '&nbsp;');
+    html += this.getTextByPosition(0, trigger.pos - trigger.trigger.length).replace(/\n/g, '<br/>').replace(/\s/g, '<span class="suggestion_mask_whiteSpace"> </span>');
     // Surround the trigger with mark
-    html += "<span id='suggestion_mark'>" + trigger.trigger + "</span>"
+    if(!query) {
+      html += "<span id='suggestion_mark'>" + trigger.trigger + "</span>";
+    } else {
+      html += trigger.trigger +  query.substring(0, query.length-1) + "<span id='suggestion_mark'>" + query.substring(query.length-1)  + "</span>";
+    }
     // Set the value of textarea after trigger
     html += this.getTextByPosition(trigger.pos, this.textArea.value.length).replace(/\n/g, '<br/>').replace(/\s/g, '&nbsp;');
     // Update mask above the textarea
@@ -452,16 +459,14 @@ autosuggestion.WikiEditor = Class.create({
   _updateMaskOffset : function() {
     var textAreaFontFamily = this.textArea.getStyle("font-family");
     var textAreaLineHeight = this.textArea.getStyle("line-height");
-    var textAreaLetterSpacing = this.textArea.getStyle("letter-spacing");
     var info = this.getEditorOffset();
 
     this.mask.setStyle({
       fontFamily : textAreaFontFamily,
       lineHeight : textAreaLineHeight,
-      letterSpacing : textAreaLetterSpacing,
       top: info.top + "px",
       left: info.left + "px",
-      width: (info.width-3) + "px",
+      width: (info.width-2) + "px",
       height: info.height + "px"
     });
 
