@@ -226,7 +226,7 @@ autosuggestion.Suggestor = Class.create({
  */
 autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   /** The trigger for link*/
-  linkTrigger : {trigger:"[[", pos:-1},
+  linkTrigger : {trigger:"[[", pos:-1, close:"]]"},
   
   initialize : function($super, editor) {
     $super(editor);
@@ -245,6 +245,12 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       if(this.suggestionBox != null) {
         this.suggestionBox.destroy();
       }
+    }
+    if(this.isTrigger(this.linkTrigger.close)) {
+      if(this.suggestionBox != null) {
+        this.suggestionBox.destroy();
+      }
+      this.currentTrigger = null;
     }
     if(this.currentTrigger == null){
       return;
@@ -295,6 +301,9 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     if(!this.decideContext()) {
       console.debug("Out of the [[ trigger context, waiting...");
       this.currentTrigger = null;
+      if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
+        this.suggestionBox.destroy();
+      }
       return;
     }
     this.editor.updateMask(this.linkTrigger);
