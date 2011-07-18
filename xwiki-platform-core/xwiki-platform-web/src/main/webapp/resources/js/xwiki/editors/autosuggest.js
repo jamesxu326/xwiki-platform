@@ -498,7 +498,6 @@ autosuggestion.SuggestionBox = Class.create({
   	+'<div id="suggestion_box" class="container">'
 	  +'<div id="suggestion_head">
              +'<div id="suggestion_title"></div>'
-             +'<div id='suggestion_close'></div>'
              +'<div style='clear:both'></div>'
           +'</div>'
 	  +'<div id="suggestion_resultList"></div>'
@@ -524,12 +523,9 @@ autosuggestion.SuggestionBox = Class.create({
     var suggestion_head = new Element('div', {'id' : 'suggestion_head'});
     suggestion_box.appendChild(suggestion_head);
     var suggestion_title = new Element('div', {'id' : 'suggestion_title'});
-    var suggestion_close = new Element('div', {'id' : 'suggestion_close'});
     var suggestion_clear = new Element('div', {'style' : 'clear:both'});
     suggestion_head.appendChild(suggestion_title);
-    suggestion_head.appendChild(suggestion_close);
     suggestion_head.appendChild(suggestion_clear);
-    suggestion_close.observe('click', this.close.bind(this));
     // The suggestion list container of the suggestion box
     var suggestion_resultList = new Element('div', {'id' : 'suggestion_resultList'});
     suggestion_box.appendChild(suggestion_resultList);
@@ -553,16 +549,6 @@ autosuggestion.SuggestionBox = Class.create({
     // Remove the suggestion box
     this.unBindSuggestionBoxEvents();
     $('suggestion_box_container').remove();
-  },
-  
-  /**
-   * Close suggestion box when user click on the close icon: 
-   */
-  close : function() {
-    // Destroy the suggestion box;
-    this.destroy();
-    // Focus the editor;
-    this.editor.obj.focus();
   },
   
   /**
