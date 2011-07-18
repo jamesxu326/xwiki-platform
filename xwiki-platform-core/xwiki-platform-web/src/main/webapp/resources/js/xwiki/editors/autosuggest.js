@@ -82,18 +82,18 @@ autosuggestion.Suggestor = Class.create({
     this.editor.getTextArea().observe("keyup", this.onKeyupAvatar);
     this.onClickAvatar = this.onClick.bind(this);
     this.editor.getTextArea().observe("click", this.onClickAvatar);
-    // Record the mouse position in the body
-    this.onBodyMouseMoveAvatar = this.onBodyMouseMove.bind(this);
-    $(document.body).observe("mousemove", this.onBodyMouseMoveAvatar);
     this.onBlurAvatar = this.onBlur.bind(this);
     this.editor.getTextArea().observe("blur", this.onBlurAvatar);
+    // Listen to the itemSelected event when user select one item from the suggestion box.
+    this.onItemSelectedAvatar = this.onItemSelected.bind(this);
+    document.observe("xwiki:autosuggestion:itemSelected", this.onItemSelectedAvatar);
   },
 
   unBindEvents : function() {
     this.editor.getTextArea().stopObserving("keyup", this.onKeyupAvatar);
     this.editor.getTextArea().stopObserving("click", this.onClickAvatar);
-    $(document.body).stopObserving("mousemove", this.onBodyMouseMoveAvatar);
     this.editor.getTextArea().stopObserving("blur", this.onBlurAvatar);
+    document.stopObserving("xwiki:autosuggestion:itemSelcted", this.onItemSelectedAvatar);
   },
  
   /**
