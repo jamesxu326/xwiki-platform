@@ -6,22 +6,6 @@ var XWiki = (function (XWiki) {
 var autosuggestion = XWiki.autosuggestion = XWiki.autosuggestion || {};
 
 var EVENTKEYS = {
-  KEY_BACKSPACE: 8,
-  KEY_TAB: 9,
-  KEY_RETURN: 13,
-  KEY_ESC: 27,
-  KEY_LEFT: 37,
-  KEY_UP: 38,
-  KEY_RIGHT: 39,
-  KEY_DOWN: 40,
-  KEY_PRIOR: 33,
-  KEY_NEXT: 34,
-  KEY_DELETE: 46,
-  KEY_HOME: 36,
-  KEY_END: 35,
-  KEY_PAGEUP: 33,
-  KEY_PAGEDOWN: 34,
-  KEY_INSERT: 45,
   KEY_PRINT: 42,
   KEY_PAUSE: 19,
   KEY_NUMLOCK: 136,
@@ -121,53 +105,55 @@ autosuggestion.Suggestor = Class.create({
   },
   
   /**
-   * Record the mouse position on the body.
-   */
-  onBodyMouseMove : function(event) {
-    this.mousePos = {"top":event.pageY, "left":event.pageX};
+   * When user select item from the suggestion box, "xwiki:autosuggestion:itemSelected"
+   * event will be triggered, onItemSelected handles the actions for these item selected.
+   */ 
+  onItemSelected : function(event) {
+    var type = event.memo["type"];
+    var selectedItem = event.memo["selectedValue"];
+    switch(type) {
+      case "link":
+        this.completeLinkSuggestor(selectedItem);
+        break;
+      case "image":
+        this.completeImageSuggestor(selectedItem);
+        break;
+      case "macro":
+        this.completeMacroSuggestor(selectedItem);
+        break;
+    }    
   },
-
+  
   /** 
    * When user unfocus on the editor, the suggestor will be destroyed
    * except when user focus on the suggestion box.
    */
   onBlur : function(event) {
-    if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
-      var boxPos = this.suggestionBox.getPosition();
-      // If the mouse position is in the range of the suggestion box, the suggestor should not
-      // be destroyed.
-      if(this.mousePos.top > boxPos.top && this.mousePos.top < boxPos.top + boxPos.height &&
-         this.mousePos.left > boxPos.left && this.mousePos.left < boxPos.left + boxPos.width) {
-        return;
+    var thisObj = this;
+    setTimeout(function(){
+      if(document.activeElement.id != "content") {
+        thisObj.destroy();
       }
-    }
-    this.destroy();
+    }, 500);
   },
 
   onKeyup : function(event) {
     var code = event.keyCode;
     // If left, right key is pressed, the suggestion box show not be instantiated
     // or should be destroyed if it has been intantiated.
-    // left, right, esc, tab, pageup, pagedown, home, end, prior, next
-    if(code == 0 || code == EVENTKEYS.KEY_LEFT || code == EVENTKEYS.KEY_RIGHT || code == EVENTKEYS.KEY_ESC || 
-       code == EVENTKEYS.KEY_TAB || code == EVENTKEYS.KEY_PAGEUP || code == EVENTKEYS.KEY_PAGEDOWN ||
-       code == EVENTKEYS.KEY_HOME || code == EVENTKEYS.KEY_END || code == EVENTKEYS.PRIOR || 
-       code == EVENTKEYS.KEY_NEXT) {
-      if(!this.suggestionBox.isDestroyed()) {
+    // left, right, esc, tab, pageup, pagedown, home, end
+    var keyForDestroy = $A([0, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_ESC, EVENTKEYS.KEY_TAB, Event.KEY_PAGEUP, Event.KEY_PAGEDOWN, Event.KEY_HOME, Event.KEY_END]);
+    if(keyForDestroy.include(code)) {
+      if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
+        this.currentTrigger = null;
         this.suggestionBox.destroy();
       }
       return;
     }
     // Suggestion should not be executed if the following keys are typed;
-    // F1~F12, up, down, return, shift, ctrl, alt, insert, capslock, fn, print screen, pause, delete, numlock
-    if(code != EVENTKEYS.KEY_UP && code != EVENTKEYS.KEY_DOWN && code != EVENTKEYS.KEY_RETURN &&
-       code != EVENTKEYS.KEY_SHIFT && code != EVENTKEYS.KEY_ALT && code != EVENTKEYS.KEY_CAPSLOCK &&
-       code != EVENTKEYS.KEY_PRINT && code != EVENTKEYS.KEY_PAUSE && code != EVENTKEYS.KEY_DELETE &&
-       code != EVENTKEYS.KEY_NUMLOCK && code != EVENTKEYS.KEY_CONTROL && code != EVENTKEYS.KEY_INSERT &&
-       code != EVENTKEYS.KEY_F1 && code != EVENTKEYS.KEY_F2 && code != EVENTKEYS.KEY_F3 &&
-       code != EVENTKEYS.KEY_F4 && code != EVENTKEYS.KEY_F5 && code != EVENTKEYS.KEY_F6 &&
-       code != EVENTKEYS.KEY_F7 && code != EVENTKEYS.KEY_F8 && code != EVENTKEYS.KEY_F9 &&
-       code != EVENTKEYS.KEY_F10 && code != EVENTKEYS.KEY_F11 && code != EVENTKEYS.KEY_F12) { 
+    // F1~F12, up, down, return, shift, ctrl, alt, insert, capslock,  print screen, pause, delete, numlock
+    var keyForNotSuggest = $A([Event.KEY_UP, Event.KEY_DOWN, Event.KEY_RETURN, Event.KEY_INSERT, EVENTKEYS.KEY_SHIFT,EVENTKEYS.KEY_ALT, EVENTKEYS.KEY_CAPSLOCK, EVENTKEYS.KEY_NUMLOCK, EVENTKEYS.KEY_CONTROL, EVENTKEYS.KEY_PAUSE, EVENTKEYS.KEY_PRINT,  EVENTKEYS.KEY_F1, EVENTKEYS.KEY_F2, EVENTKEYS.KEY_F3, EVENTKEYS.KEY_F4, EVENTKEYS.KEY_F5, EVENTKEYS.KEY_F6, EVENTKEYS.KEY_F7, EVENTKEYS.KEY_F8, EVENTKEYS.KEY_F9, EVENTKEYS.KEY_F10, EVENTKEYS.KEY_F11, EVENTKEYS.KEY_F12]);
+    if(!keyForNotSuggest.include(code)) {
       this.suggest();
     }
   },
