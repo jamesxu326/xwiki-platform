@@ -313,6 +313,15 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     console.debug("query for trigger [[:" + query);
     // Show the suggestion box for suggestion results.
     this.showSuggestions(query);
+  },
+
+  /**  
+   * Complete link When user select item from link suggestion box. 
+   */
+  completeLinkSuggestor : function(item) {
+    if(item == null) return;
+    var insertValue = "some text>>" + item.title;
+    this.editor.insertText(insertValue, this.currentTrigger);
   }
 });
 
@@ -391,6 +400,19 @@ autosuggestion.WikiEditor = Class.create({
     if(start == null && end == null) return this.textArea.value;
     if(end == null) end = this.textArea.value.length-1;
     return this.textArea.value.substring(start, end);
+  },
+  
+  insertText : function(value, trigger) { 
+    var t =this.textArea;
+    // Record the scrollTop of editor before inserting text
+    var editorScrollTop = this.getScrollTop();
+    var beforeTrigger = t.value.substring(0, trigger.pos);
+    var afterTrigger = t.value.substring(this.getCursorPosition(), t.value.length);
+    var replaceText = beforeTrigger + value + trigger.close + afterTrigger;
+    this.textArea.value = replaceText;
+    this.setCursorPosition((beforeTrigger + value + trigger.close).length);
+    // Reset the scrollTop for the editor after inserting text
+    t.scrollTop = editorScrollTop;
   },
  
   /**  
@@ -640,9 +662,9 @@ autosuggestion.SuggestionBox = Class.create({
       case 13:
         var selectedValue = this.getSelectedItemValue(i);
         console.debug("selected item value:" + selectedValue);
-        document.fire("xwiki:autosuggestion:itemSelected", {selectedValue:selectedValue});
+        document.fire("xwiki:autosuggestion:itemSelected", {"type":"link", "selectedValue":selectedValue});
         this.destroy();
-        Event.stop(event);  
+	Event.stop(event);  
         return false;
         break;
       default:
@@ -824,7 +846,7 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
     this.index = index;
     var results = this.pageItemValues.concat(this.attachmentItemValues);
     console.debug("selected item value:" + results[index]);
-    document.fire("xwiki:autosuggestion:itemSelected", {selectedValue:results[index]});
+    document.fire("xwiki:autosuggestion:itemSelected", {"type":"link", "selectedValue":results[index]});
     this.destroy();// todo: this.destroy()
   },
   
