@@ -6,10 +6,7 @@ var XWiki = (function (XWiki) {
 var autosuggestion = XWiki.autosuggestion = XWiki.autosuggestion || {};
 
 var EVENTKEYS = {
-  KEY_PRINT: 42,
-  KEY_PAUSE: 19,
   KEY_NUMLOCK: 136,
-  KEY_TAB: 9,
   KEY_CAPSLOCK: 20,
   KEY_SHIFT: 16,
   KEY_ALT: 18,
@@ -142,7 +139,7 @@ autosuggestion.Suggestor = Class.create({
     // If left, right key is pressed, the suggestion box show not be instantiated
     // or should be destroyed if it has been intantiated.
     // left, right, esc, tab, pageup, pagedown, home, end
-    var keyForDestroy = $A([0, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_ESC, EVENTKEYS.KEY_TAB, Event.KEY_PAGEUP, Event.KEY_PAGEDOWN, Event.KEY_HOME, Event.KEY_END]);
+    var keyForDestroy = $A([0, Event.KEY_LEFT, Event.KEY_RIGHT, Event.KEY_ESC, Event.KEY_TAB, Event.KEY_PAGEUP, Event.KEY_PAGEDOWN, Event.KEY_HOME, Event.KEY_END]);
     if(keyForDestroy.include(code)) {
       if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
         this.currentTrigger = null;
@@ -152,7 +149,7 @@ autosuggestion.Suggestor = Class.create({
     }
     // Suggestion should not be executed if the following keys are typed;
     // F1~F12, up, down, return, shift, ctrl, alt, insert, capslock,  print screen, pause, delete, numlock
-    var keyForNotSuggest = $A([Event.KEY_UP, Event.KEY_DOWN, Event.KEY_RETURN, Event.KEY_INSERT, EVENTKEYS.KEY_SHIFT,EVENTKEYS.KEY_ALT, EVENTKEYS.KEY_CAPSLOCK, EVENTKEYS.KEY_NUMLOCK, EVENTKEYS.KEY_CONTROL, EVENTKEYS.KEY_PAUSE, EVENTKEYS.KEY_PRINT,  EVENTKEYS.KEY_F1, EVENTKEYS.KEY_F2, EVENTKEYS.KEY_F3, EVENTKEYS.KEY_F4, EVENTKEYS.KEY_F5, EVENTKEYS.KEY_F6, EVENTKEYS.KEY_F7, EVENTKEYS.KEY_F8, EVENTKEYS.KEY_F9, EVENTKEYS.KEY_F10, EVENTKEYS.KEY_F11, EVENTKEYS.KEY_F12]);
+    var keyForNotSuggest = $A([Event.KEY_UP, Event.KEY_DOWN, Event.KEY_RETURN, Event.KEY_INSERT, EVENTKEYS.KEY_SHIFT, EVENTKEYS.KEY_ALT, EVENTKEYS.KEY_CAPSLOCK, EVENTKEYS.KEY_NUMLOCK, EVENTKEYS.KEY_CONTROL,  EVENTKEYS.KEY_F1, EVENTKEYS.KEY_F2, EVENTKEYS.KEY_F3, EVENTKEYS.KEY_F4, EVENTKEYS.KEY_F5, EVENTKEYS.KEY_F6, EVENTKEYS.KEY_F7, EVENTKEYS.KEY_F8, EVENTKEYS.KEY_F9, EVENTKEYS.KEY_F10, EVENTKEYS.KEY_F11, EVENTKEYS.KEY_F12]);
     if(!keyForNotSuggest.include(code)) {
       this.suggest();
     }
