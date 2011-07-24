@@ -266,16 +266,45 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   
   _showSuggestionResults : function(query, position, size) {
     if(query == null) return;
-    new Ajax.Request("/xwiki/bin/view/Main/queryJson?xpage=plain&outputSyntax=plain", {
+    // The query for lucene search service can not be empty, or it will give no results.
+    // So if the query is empty, we use "a" as the default query, which means to get the
+    // pages or attachments start with "a";
+    if(query == "") query = "a"; 
+    new Ajax.Request("http://localhost:8080/xwiki/bin/get/XWiki/SuggestLuceneService?outputSyntax=plain&query=(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)&nb=30&media=json", {
       method : 'get',
-      parameters : {"query":query},
-      onSuccess : this._onSuccess.bind(this, position, size),
+      parameters : {"input":query},
+      onSuccess : this._onSuccess.bind(this, position, size, query),
       onFailure : this._onFailure.bind(this)
     });
   },
   
-  _onSuccess : function(position, size, response) { 
-    var resultList = $H(response.responseJSON);
+  _onSuccess : function(position, size, query, response) { 
+    var results= response.responseJSON
+    var resultList = {"pages":[], "attachments":[]};
+    if(results != null) {
+      // Sort the results list in following orders(only for page name and attachment name):
+      // Prior A : Prefix matched
+      // Prior B : Partial matched
+      var results = results.sortBy(function(item) {
+        if(item.name.startsWith(query)) {
+          return item.name.length - query.length;
+        } else {
+          return item.name.length + 1000;
+        }
+      });
+      
+      for(var i=0; i < results.length; i++) {
+        if(results[i].type == "wikipage"){
+          resultList.pages.push({"name":results[i].name, "path":results[i].path});
+        }
+        if(results[i].type == "attachment"){
+          resultList.attachments.push({"name":results[i].name, "path":results[i].path});
+        }
+      }
+    }
+    if(resultList.pages.length == 0) resultList.pages = null;
+    if(resultList.attachments.length == 0) resultList.attachments = null;
+    resultList = $H(resultList);
     if(this.suggestionBox == null || this.suggestionBox.isDestroyed()) {
       this.suggestionBox = new autosuggestion.LinkSuggestionBox(resultList, position, size, {"type":"wiki", "obj":this.editor.getTextArea()});
     }
