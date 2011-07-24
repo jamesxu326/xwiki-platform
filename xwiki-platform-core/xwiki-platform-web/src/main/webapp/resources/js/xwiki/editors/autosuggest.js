@@ -119,6 +119,7 @@ autosuggestion.Suggestor = Class.create({
         this.completeMacroSuggestor(selectedItem);
         break;
     }    
+    this.destroy();
   },
   
   /** 
@@ -317,8 +318,11 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
    */
   completeLinkSuggestor : function(item) {
     if(item == null) return;
-    var insertValue = "some text>>" + item.title;
+    var labelText = "Label Text";
+    var insertValue = labelText + ">>" + item.name;
     this.editor.insertText(insertValue, this.currentTrigger);
+    // Highlight the label text, it is convenient for user to edit the label text
+    this.editor.highlightText(this.linkTrigger.pos, labelText.length);
   }
 });
 
@@ -386,6 +390,26 @@ autosuggestion.WikiEditor = Class.create({
       this.textArea.setSelectionRange(n, n);
       this.textArea.focus();
     }
+  },
+  
+  /**  
+   * Highlight the text in the textarea from the start position @param position
+   * and move @charLength characters;
+   * @param position The start position of the text to hightlight;
+   * @param charLength The character length to highlight; 
+   */
+  highlightText : function(position, charLength) {
+    this.setCursorPosition(position);
+    if(document.selection) {
+      var range = this.textArea.createTextRange();
+      for(var i=0; i < charLength; i++) {
+        range.expand("character");
+      }
+      range.select();
+    } else {
+      this.textArea.setSelectionRange(this.textArea.selectionStart, this.textArea.selectionStart + charLength);
+      this.textArea.focus();
+    } 
   },
   
   /**  
