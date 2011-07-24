@@ -410,7 +410,7 @@ autosuggestion.WikiEditor = Class.create({
   setCursorPosition : function(position) {
     var n = position == "end"? this.textArea.value.length : position;
     if(document.selection){
-      var range = t.createTextRange();
+      var range = this.textArea.createTextRange();
       range.moveEnd("character", -this.textArea.value.length);
       range.moveEnd("character", n);
       range.moveStart("character", n);
