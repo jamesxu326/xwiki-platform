@@ -853,7 +853,7 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
     this.pageItemValues.each(function(obj, index){
       var pageDiv = new Element('div', {'class' : 'pageItem'});		
       var titleDiv = new Element('div', {'class' : 'pageItemTitle'}); 
-      titleDiv.insert(obj.title);
+      titleDiv.insert(obj.name);
       	  
       var fullNameDiv = new Element('div', {'class' : 'pageItemFullname'}); 
       fullNameDiv.insert(obj.path);
@@ -875,7 +875,7 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
     this.attachmentItemValues.each(function(obj, index){
       var attachmentDiv = new Element('div', {'class' : 'attachmentItem'});		
       var titleDiv = new Element('div', {'class' : 'attachmentItemTitle'});		 
-      titleDiv.insert(obj.title);
+      titleDiv.insert(obj.name);
 	  
       attachmentDiv.appendChild(titleDiv);		
       suggestion_attachment.appendChild(attachmentDiv);
