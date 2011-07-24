@@ -988,10 +988,11 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
   
   /** @Overwrite */
   getSelectedItemValue : function(index){
-    if(index < this.pageItemValues.length) {
+    if(this.pageItemValues && index < this.pageItemValues.length) {
       return this.pageItemValues[index];
     } else {
-      return this.attachmentItemValues[index];
+      var offset = this.pageItemValues == null ? 0 : this.pageItemValues.length;
+      return this.attachmentItemValues[index - offset];
     }
   }
 });
