@@ -167,7 +167,7 @@ autosuggestion.Suggestor = Class.create({
    * Show the suggestion result list.
    * @Param query The query for suggestion list.
    */
-  showSuggestions : function(query) {
+  showSuggestions : function(requestUrl, query) {
     // Calculate the offset position of the suggestion box
     var markOffset = this.editor.getMarkOffset();
     var scrollTop = this.editor.getScrollTop();
@@ -177,14 +177,14 @@ autosuggestion.Suggestor = Class.create({
     // Todo: the size should adjust to the content, instead of fixing
     var size = {"width" : 300, "height" : 400};
     // Get the suggestions and show.
-    this._showSuggestionResults(query, position, size);
+    this._showSuggestionResults(requestUrl, query, position, size);
   },
   
   /**
    * Get the suggestion results and show, it should be overwritten
    * by the specific suggestors.
    */
-  _showSuggestionResults : function(query, position, size) {
+  _showSuggestionResults : function(requestUrl, query, position, size) {
     // To overwrite
   },
 
@@ -309,13 +309,12 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     }
   },
   
-  _showSuggestionResults : function(query, position, size) {
-    if(query == null) return;
+  _showSuggestionResults : function(requestUrl, query, position, size) {
+    if(query == null || requestUrl == null || requestUrl == "") return;
     // The query for lucene search service can not be empty, or it will give no results.
     // So if the query is empty, we use "a" as the default query, which means to get the
     // pages or attachments start with "a";
-    if(query == "") query = "a"; 
-    new Ajax.Request("http://localhost:8080/xwiki/bin/get/XWiki/SuggestLuceneService?outputSyntax=plain&query=(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)&nb=30&media=json", {
+    new Ajax.Request(requestUrl, {
       method : 'get',
       parameters : {"input":query},
       onSuccess : this._onSuccess.bind(this, position, size, query),
@@ -340,10 +339,10 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       
       for(var i=0; i < results.length; i++) {
         if(results[i].type == "wikipage"){
-          resultList.pages.push({"name":results[i].name, "path":results[i].path});
+          resultList.pages.push({"name":results[i].name, "path":results[i].path, "fullName":results[i].info, "type":"page"});
         }
         if(results[i].type == "attachment"){
-          resultList.attachments.push({"name":results[i].name, "path":results[i].path});
+          resultList.attachments.push({"name":results[i].name, "path":results[i].path, "fullName":results[i].info, "type":"attachment"});
         }
       }
     }
