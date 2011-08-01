@@ -225,7 +225,13 @@ autosuggestion.Suggestor = Class.create({
 autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   /** The trigger for link*/
   linkTrigger : {trigger:"[[", pos:-1, close:"]]"},
-  
+  /** The sub-trigger for attachments*/
+  attachTrigger : {trigger:"attach:", pos:-1, close:null},
+  /** The sub-trigger for getting pages or attachments of the specific space*/
+  spaceTrigger : {trigger:".", pos:-1, close:null},
+  /** The sub-trigger for attachments of specific page*/
+  atTrigger : {trigger:"@", pos:-1, close:null},
+
   initialize : function($super, editor) {
     $super(editor);
   },
@@ -244,23 +250,62 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
         this.suggestionBox.destroy();
       }
     }
+
+    // Decide whether attach trigger "attach:" is triggered
+    if(this.isTrigger(this.attachTrigger.trigger)) {
+      this.attachTrigger.pos = this.editor.getCursorPosition();
+      this.currentTrigger = this.attachTrigger;
+      if(this.suggestionBox != null) {
+        this.suggestionBox.destroy();
+      }
+    }
+
+    // Decide whether space trigger "." is triggered
+    if(this.isTrigger(this.spaceTrigger.trigger)) {
+      this.spaceTrigger.pos = this.editor.getCursorPosition();
+      this.currentTrigger = this.spaceTrigger;
+      if(this.suggestionBox != null) {
+        this.suggestionBox.destroy();
+      }
+    }
+   
+    // Decide whether at trigger "@" is triggered
+    if(this.isTrigger(this.atTrigger.trigger)) {
+      this.atTrigger.pos = this.editor.getCursorPosition();
+      this.currentTrigger = this.atTrigger;
+      if(this.suggestionBox != null) {
+        this.suggestionBox.destroy();
+      }
+    }
+
+    // Decide whether the close tag of the link trigger "]]" is triggered
     if(this.isTrigger(this.linkTrigger.close)) {
       if(this.suggestionBox != null) {
         this.suggestionBox.destroy();
       }
       this.currentTrigger = null;
     }
+
     if(this.currentTrigger == null){
       return;
     } 
     // Switch to different actions according to the current
     // trigger context.
     // Notice : There might be some other triggers under link
-    // trigger context, like ">>","attach:","@" and "||"
+    // trigger context, like,"attach:","@" and "."
     switch(this.currentTrigger.trigger) {
       case this.linkTrigger.trigger:
         this._actionLinkTriggered();
 	break;
+      case this.attachTrigger.trigger:
+        this._actionAttachTriggered();
+        break;
+      case this.spaceTrigger.trigger:
+        this._actionSpaceTriggered();
+        break;
+      case this.atTrigger.trigger:
+        this._actionAtTriggered();
+        break;
     }
   },
   
