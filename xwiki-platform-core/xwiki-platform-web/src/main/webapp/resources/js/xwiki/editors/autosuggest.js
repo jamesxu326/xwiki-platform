@@ -499,7 +499,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
  * that add to the plain textArea object.
  */
 autosuggestion.WikiEditor = Class.create({
-  /** The textarea object of the wiki object*/
+  /** The textarea object of the wiki object */
   textArea: null,
   mask : null,
  
@@ -1033,7 +1033,12 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
   /** @Overwrite */
   itemDbClickHandler : function(index, itemList){
     this.index = index;
-    var results = this.pageItemValues.concat(this.attachmentItemValues);
+    var results = null;
+    if(this.pageItemValues == null) {
+      results = this.attachmentItemValues;
+    } else {
+      results = this.pageItemValues.concat(this.attachmentItemValues);
+    }
     console.debug("selected item value:" + results[index]);
     document.fire("xwiki:autosuggestion:itemSelected", {"type":"link", "selectedValue":results[index]});
     this.destroy();// todo: this.destroy()
