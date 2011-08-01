@@ -362,6 +362,14 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   },
 
   /**  
+   * Determin whether the current cursor position is in the context of the 
+   * current link trigger.
+   */
+  _decideLinkContext : function() {
+    return this.decideContext() && (this.linkTrigger.pos != -1)
+  },
+
+  /**  
    * The action executed when link trigger is triggered.
    */
   _actionLinkTriggered : function() {
@@ -370,7 +378,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     // is not changed, but the cursor is out of the current trigger
     // context. For example: onclick - move the cursor to other position
     // pageDown and pageUp... 
-    if(!this.decideContext()) {
+    if(!this._decideLinkContext()) {
       console.debug("Out of the [[ trigger context, waiting...");
       this.currentTrigger = null;
       if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
@@ -383,8 +391,89 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     var currentPos = this.editor.getCursorPosition();
     var query = this.getQuery(this.linkTrigger.pos, currentPos);
     console.debug("query for trigger [[:" + query);
+    if(query == "") {
+      var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&nb=20&usage=autosuggestion');      
+    } else {
+      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)&nb=30&media=json');
+    }
+    //"http://localhost:8080/xwiki/bin/get/XWiki/SuggestLuceneService?outputSyntax=plain&query=(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)&nb=30&media=json"
     // Show the suggestion box for suggestion results.
-    this.showSuggestions(query);
+    this.showSuggestions(requestUrl, query);
+  },
+
+  _actionAttachTriggered : function() {
+    if(!this._decideLinkContext()) {
+      console.debug("Out of the attach: trigger context, waiting...");
+      this.currentTrigger = null;
+      if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
+        this.suggestionBox.destroy();
+      }
+      return;
+    }
+    this.editor.updateMask(this.attachTrigger);
+    // Get the value user typed after the trigger as the query for suggestion
+    var currentPos = this.editor.getCursorPosition();
+    var query = this.getQuery(this.attachTrigger.pos, currentPos);
+    console.debug("query for trigger attach:" + query);
+    var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=filename:__INPUT__* AND type:attachment&nb=30&media=json');
+    // Show the suggestion box for suggestion results.
+    this.showSuggestions(requestUrl, query);
+  },
+
+  _actionSpaceTriggered : function() {
+    if(!this._decideLinkContext()) {
+      console.debug("Out of the '.' trigger context, waiting...");
+      this.currentTrigger = null;
+      if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
+        this.suggestionBox.destroy();
+      }
+      return;
+    }
+    this.editor.updateMask(this.spaceTrigger);
+    // Get the value user typed after the trigger as the query for suggestion
+    var currentPos = this.editor.getCursorPosition();
+    var query = this.getQuery(this.spaceTrigger.pos, currentPos);
+    console.debug("query for trigger '.':" + query);
+    var contextValue = this.editor.getTextArea().value.substring(this.linkTrigger.pos, currentPos);
+    if(contextValue.indexOf(this.attachTrigger.trigger) == -1){
+      var space = this.editor.getTextArea().value.substring(this.linkTrigger.pos, this.spaceTrigger.pos-1);
+      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=space:'+space+' AND name:__INPUT__* AND type:wikipage&nb=30&media=json');
+    } else {
+      var space = this.editor.getTextArea().value.substring(this.attachTrigger.pos, this.spaceTrigger.pos-1);
+      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=space:'+space+' AND filename:__INPUT__* AND type:attachment&nb=30&media=json');
+    }
+    // Show the suggestion box for suggestion results.
+    this.showSuggestions(requestUrl, query);
+  },
+
+  _actionAtTriggered : function() {
+    if(!this._decideLinkContext()) {
+      console.debug("Out of the '@' trigger context, waiting...");
+      this.currentTrigger = null;
+      if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
+        this.suggestionBox.destroy();
+      }
+      return;
+    }
+    this.editor.updateMask(this.atTrigger);
+    // Get the value user typed after the trigger as the query for suggestion
+    var currentPos = this.editor.getCursorPosition();
+    var query = this.getQuery(this.atTrigger.pos, currentPos);
+    console.debug("query for trigger '@':" + query);
+    var contextValue = this.editor.getTextArea().value.substring(this.linkTrigger.pos, currentPos);
+    if(contextValue.indexOf(this.attachTrigger.trigger) != -1){
+      var space = null;
+      if(contextValue.indexOf(this.spaceTrigger.trigger) != -1){
+        var space = this.editor.getTextArea().value.substring(this.attachTrigger.pos, this.spaceTrigger.pos-1);
+        var wikipage = this.editor.getTextArea().value.substring(this.spaceTrigger.pos, this.atTrigger.pos-1); 
+        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=space:'+space+' AND name:'+wikipage+' AND filename:__INPUT__* AND type:attachment&nb=30&media=json');
+      } else {
+        var wikipage = this.editor.getTextArea().value.substring(this.attachTrigger.pos, this.atTrigger.pos-1);
+        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=name:'+wikipage+' AND filename:__INPUT__* AND type:attachment&nb=30&media=json'); 
+      }
+      // Show the suggestion box for suggestion results.
+      this.showSuggestions(requestUrl, query);
+    } 
   },
 
   /**  
