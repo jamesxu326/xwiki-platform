@@ -105,19 +105,59 @@
 </property>
 <property>
 <content>{{velocity}}
-#set ($recentlyModified = $xwiki.searchDocuments('where 1=1 order by doc.date desc', 5, 0))
-#if ($recentlyModified.size() &gt; 0 || $showEmptyPanels)
-  #panelheader($msg.get('panels.recentlyModified.title'))
-  #foreach ($docname in $recentlyModified)
+#set($media = "$!request.media")
+#set($usage = "$!request.usage")
+#set($nb = "$!request.nb")
+#if($nb != '')
+  #set($nb = $util.parseInt($nb) + 1)
+#else
+  #set($nb = 5)
+#end
+
+#if ($usage == 'autosuggestion')
+  #set($discard = $response.setContentType("application/json"))
+  #set ($recentlyModifiedPage = $xwiki.searchDocuments('where 1=1 order by doc.date desc', $nb, 0))
+  #set($size = $recentlyModifiedPage.size())
+  [
+  #foreach ($docname in $recentlyModifiedPage)
     #if ($xwiki.hasAccessLevel('view', $xcontext.getUser(), $docname))
-      #set ($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
-      #if ($foreach.index &gt; 0)
-        (% class="pitemseparator" %) ~| (%%)##
-      #end
-      (% class="panelitem" %)[[$rdoc.plainTitle&gt;&gt;$rdoc]](%%)##
+      #set ($rdoc = $xwiki.getDocument($docname))
+      #set($name = $rdoc.getName())
+      #set($fullname = "$rdoc.getWiki():$rdoc.getSpace().$rdoc.getName()")
+      #if($velocityCount == 1)
+        {"info":"$rdoc.fullName", "path":"$fullname", "name":"$name", "type":"wikipage"}
+      #else
+        ,{"info":"$rdoc.fullName", "path":"$fullname", "name":"$name", "type":"wikipage"}
+      #end  
     #end
   #end
-#panelfooter()
+
+  #set($result = $services.query.hql('select doc.fullName, doc.name, attach.filename
+from XWikiDocument as doc, XWikiAttachment as attach where
+attach.docId=doc.id order by attach.date desc').setLimit($nb).execute())
+  #foreach($item in $result)
+    #if($velocityCount == 1 &amp;&amp; $size == 0)
+      {"name":"$item.get(2)", "path":"$item.get(0)", "info":"$item.get(0)", "type":"attachment"}
+    #else
+      ,{"name":"$item.get(2)","path":"$item.get(0)", "info":"$item.get(0)", "type":"attachment"}
+    #end
+  #end
+]
+#else
+  #set ($recentlyModified = $xwiki.searchDocuments('where 1=1 order by doc.date desc', $nb, 0))
+  #if ($recentlyModified.size() &gt; 0 || $showEmptyPanels)
+    #panelheader($msg.get('panels.recentlyModified.title'))
+    #foreach ($docname in $recentlyModified)
+      #if ($xwiki.hasAccessLevel('view', $xcontext.getUser(), $docname))
+        #set ($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
+        #if ($foreach.index &gt; 0)
+          (% class="pitemseparator" %) ~| (%%)##
+        #end
+        (% class="panelitem" %)[[$rdoc.plainTitle&gt;&gt;$rdoc]](%%)##
+      #end
+    #end
+    #panelfooter()
+  #end
 #end
 {{/velocity}}</content>
 </property>
@@ -131,4 +171,11 @@
 <type>view</type>
 </property>
 </object>
-<content>{{include document="Panels.PanelSheet"/}}</content></xwikidoc>
+<content>{{velocity}}
+#if ("$!request.usage" == 'autosuggestion')
+  #set($content = $doc.getObject('Panels.PanelClass').getProperty('content').value)
+  $doc.getRenderedContent($content, $doc.syntax.toIdString(), 'plain/1.0')
+#else
+  {{include document="Panels.PanelSheet"/}}
+#end
+{{velocity}}</content></xwikidoc>
