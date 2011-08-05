@@ -106,7 +106,6 @@
 <property>
 <content>{{velocity}}
 #set($media = "$!request.media")
-#set($usage = "$!request.usage")
 #set($nb = "$!request.nb")
 #if($nb != '')
   #set($nb = $util.parseInt($nb) + 1)
@@ -114,7 +113,7 @@
   #set($nb = 5)
 #end
 
-#if ($usage == 'autosuggestion')
+#if ($media == 'json')
   #set($discard = $response.setContentType("application/json"))
   #set ($recentlyModifiedPage = $xwiki.searchDocuments('where 1=1 order by doc.date desc', $nb, 0))
   #set($size = $recentlyModifiedPage.size())
@@ -124,10 +123,9 @@
       #set ($rdoc = $xwiki.getDocument($docname))
       #set($name = $rdoc.getName())
       #set($fullname = "$rdoc.getWiki():$rdoc.getSpace().$rdoc.getName()")
-      #if($velocityCount == 1)
-        {"info":"$rdoc.fullName", "path":"$fullname", "name":"$name", "type":"wikipage"}
-      #else
-        ,{"info":"$rdoc.fullName", "path":"$fullname", "name":"$name", "type":"wikipage"}
+      {"info":"${escapetool.javascript($rdoc.fullName)}", "path":"${escapetool.javascript($fullname)}", "name":"$name", "type":"wikipage"}
+      #if($velocityCount &lt; $size)
+        ,
       #end  
     #end
   #end
@@ -136,11 +134,10 @@
 from XWikiDocument as doc, XWikiAttachment as attach where
 attach.docId=doc.id order by attach.date desc').setLimit($nb).execute())
   #foreach($item in $result)
-    #if($velocityCount == 1 &amp;&amp; $size == 0)
-      {"name":"$item.get(2)", "path":"$item.get(0)", "info":"$item.get(0)", "type":"attachment"}
-    #else
-      ,{"name":"$item.get(2)","path":"$item.get(0)", "info":"$item.get(0)", "type":"attachment"}
+    #if($size &gt; 0 || $velocityCount &gt; 1)
+      ,
     #end
+    {"name":"$item.get(2)", "path":"${escapetool.javascript($item.get(0))}", "info":"${escapetool.javascript($item.get(0))}", "type":"attachment"}
   #end
 ]
 #else
@@ -172,7 +169,7 @@ attach.docId=doc.id order by attach.date desc').setLimit($nb).execute())
 </property>
 </object>
 <content>{{velocity}}
-#if ("$!request.usage" == 'autosuggestion')
+#if ("$!request.media" == 'json')
   #set($content = $doc.getObject('Panels.PanelClass').getProperty('content').value)
   $doc.getRenderedContent($content, $doc.syntax.toIdString(), 'plain/1.0')
 #else
