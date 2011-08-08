@@ -238,6 +238,8 @@ autosuggestion.Suggestor = Class.create({
 autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   /** The trigger for link*/
   linkTrigger : {trigger:"[[", pos:-1, close:"]]"},
+  /** Label is not a trigger,but it is a mark*/
+  labelTrigger : {trigger:">>", pos:-1, close:null},
   /** The sub-trigger for attachments*/
   attachTrigger : {trigger:"attach:", pos:-1, close:null},
   /** The sub-trigger for getting pages or attachments of the specific space*/
@@ -298,18 +300,23 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       }
       this.currentTrigger = null;
     }
+    this._decideTriggerActions();
+  },
 
+  /**
+   * Switch to different actions according to the current
+   * trigger context.
+   * Notice : There might be some other triggers under link
+   * trigger context, like,"attach:","@" and "."
+   */
+  _decideTriggerActions : function() {
     if(this.currentTrigger == null){
       return;
-    } 
-    // Switch to different actions according to the current
-    // trigger context.
-    // Notice : There might be some other triggers under link
-    // trigger context, like,"attach:","@" and "."
+    }
     switch(this.currentTrigger.trigger) {
       case this.linkTrigger.trigger:
         this._actionLinkTriggered();
-	break;
+        break;
       case this.attachTrigger.trigger:
         this._actionAttachTriggered();
         break;
@@ -319,6 +326,66 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       case this.atTrigger.trigger:
         this._actionAtTriggered();
         break;
+    }
+  },
+
+  /** Overwrite */
+  continueSuggest : function() {
+    if(this.currentTrigger != null) {
+      return;
+    }
+    var currentPos = this.editor.getCursorPosition();
+    var contextObj = this._getLinkContext(currentPos);
+    if(contextObj.linkPos == -1) return;
+    this.linkTrigger.pos = contextObj.linkPos;
+    if(contextObj.atPos != -1) {
+      this.atTrigger.pos = contextObj.atPos;
+      this.currentTrigger = this.atTrigger;
+    } else if(contextObj.spacePos != -1) {
+      this.spaceTrigger.pos = contextObj.spacePos;
+      this.currentTrigger = this.spaceTrigger;
+    } else if(contextObj.attachPos != -1) {
+      this.attachTrigger.pos = contextObj.attachPos;
+      this.currentTrigger = this.attachTrigger;
+    } else {
+      this.currentTrigger = this.linkTrigger;
+    }
+    this._decideTriggerActions();
+  },
+
+  /**
+   * Get the link context when user types shortcut
+   * "ctrl+enter"
+   */
+  _getLinkContext : function(currentPos) {
+    var strBefore = this.editor.getTextArea().value.substring(0, currentPos);
+    var strAfter = this.editor.getTextArea().value.substring(currentPos, this.editor.getTextArea().value.length);
+    var triggerPos = strBefore.lastIndexOf(this.linkTrigger.trigger);
+    var triggerClosePos = strAfter.indexOf(this.linkTrigger.close);
+    var strBetweenBefore =  this.editor.getTextArea().value.substring(triggerPos + this.linkTrigger.trigger.length, currentPos);
+    var strBetweenAfter = this.editor.getTextArea().value.substring(currentPos, triggerClosePos + currentPos);
+    if(triggerPos != -1) {
+      if(strBetweenBefore.indexOf(this.linkTrigger.close) == -1) {
+        var obj = {"linkPos":-1, "linkClosePos":-1, "labelPos":-1, "attachPos":-1, "spacePos":-1, "atPos":-1}
+        var linkContent = this.editor.getTextArea().value.substring(triggerPos + this.linkTrigger.trigger.length, currentPos);
+        obj.linkPos = triggerPos + this.linkTrigger.trigger.length
+        if(triggerClosePos != -1) {
+          obj.labelPos = triggerClosePos + obj.linkPos;
+        }
+        if(linkContent.indexOf(this.labelTrigger.trigger) != -1){
+          obj.labelPos = linkContent.indexOf(this.labelTrigger.trigger) + obj.linkPos + this.labelTrigger.trigger.length;
+        }
+        if(linkContent.indexOf(this.attachTrigger.trigger) != -1){
+          obj.attachPos = linkContent.indexOf(this.attachTrigger.trigger) + obj.linkPos + this.attachTrigger.trigger.length;
+        } 
+        if(linkContent.indexOf(this.spaceTrigger.trigger) != -1){
+          obj.spacePos = linkContent.indexOf(this.spaceTrigger.trigger) + obj.linkPos + this.spaceTrigger.trigger.length;
+        }
+        if(linkContent.indexOf(this.atTrigger.trigger) != -1){
+          obj.atPos = linkContent.indexOf(this.atTrigger.trigger) + obj.linkPos + this.atTrigger.trigger.length;
+        }
+        return obj;
+      }
     }
   },
   
@@ -401,12 +468,18 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     this.editor.updateMask(this.linkTrigger);
     // Get the value user typed after the trigger as the query for suggestion
     var currentPos = this.editor.getCursorPosition();
-    var query = this.getQuery(this.linkTrigger.pos, currentPos);
+    var contextValue = this.editor.getTextArea().value.substring(this.linkTrigger.pos, currentPos);
+    var labelPos = contextValue.indexOf(this.labelTrigger.trigger);
+    if(labelPos == -1) {
+      var query = this.getQuery(this.linkTrigger.pos, currentPos);
+    } else {
+      var query = this.getQuery(this.linkTrigger.pos + this.labelTrigger.trigger.length + labelPos, currentPos);
+    }
     console.debug("query for trigger [[:" + query);
     if(query == "") {
-      var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&nb=20&usage=autosuggestion');      
+      var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&nb=20&media=json');      
     } else {
-      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)&nb=30&media=json');
+      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)')+'&nb=30&media=json');
     }
     //"http://localhost:8080/xwiki/bin/get/XWiki/SuggestLuceneService?outputSyntax=plain&query=(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)&nb=30&media=json"
     // Show the suggestion box for suggestion results.
@@ -427,7 +500,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     var currentPos = this.editor.getCursorPosition();
     var query = this.getQuery(this.attachTrigger.pos, currentPos);
     console.debug("query for trigger attach:" + query);
-    var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=filename:__INPUT__* AND type:attachment&nb=30&media=json');
+    var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('filename:__INPUT__* AND type:attachment')+'&nb=30&media=json');
     // Show the suggestion box for suggestion results.
     this.showSuggestions(requestUrl, query);
   },
@@ -447,12 +520,20 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     var query = this.getQuery(this.spaceTrigger.pos, currentPos);
     console.debug("query for trigger '.':" + query);
     var contextValue = this.editor.getTextArea().value.substring(this.linkTrigger.pos, currentPos);
+    // Consider getting the page or attachment suggestions according whether the space trigger is in the context of attachmengt trigger.
     if(contextValue.indexOf(this.attachTrigger.trigger) == -1){
-      var space = this.editor.getTextArea().value.substring(this.linkTrigger.pos, this.spaceTrigger.pos-1);
-      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=space:'+space+' AND name:__INPUT__* AND type:wikipage&nb=30&media=json');
+      // Consider getting the 'space' according whether the space trigger is in the context of labelTrigger ">>", 
+      if(contextValue.indexOf(this.labelTrigger.trigger) == -1) {
+        var space = this.editor.getTextArea().value.substring(this.linkTrigger.pos, this.spaceTrigger.pos-1);
+      } else {
+        var labelTriggerPos = contextValue.indexOf(this.labelTrigger.trigger) + this.labelTrigger.trigger.length + this.linkTrigger.pos;
+        var space = this.editor.getTextArea().value.substring(labelTriggerPos, this.spaceTrigger.pos-1);
+      }
+      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND name:__INPUT__* AND type:wikipage')+'&nb=30&media=json');
     } else {
-      var space = this.editor.getTextArea().value.substring(this.attachTrigger.pos, this.spaceTrigger.pos-1);
-      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=space:'+space+' AND filename:__INPUT__* AND type:attachment&nb=30&media=json');
+      var attachPos = contextValue.indexOf(this.attachTrigger.trigger) + this.attachTrigger.trigger.length + this.linkTrigger.pos
+      var space = this.editor.getTextArea().value.substring(attachPos, this.spaceTrigger.pos-1);
+      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND filename:__INPUT__* AND type:attachment')+'&nb=30&media=json');
     }
     // Show the suggestion box for suggestion results.
     this.showSuggestions(requestUrl, query);
@@ -473,15 +554,19 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     var query = this.getQuery(this.atTrigger.pos, currentPos);
     console.debug("query for trigger '@':" + query);
     var contextValue = this.editor.getTextArea().value.substring(this.linkTrigger.pos, currentPos);
+    // The suggestion will be retreved only when "@" trigger is in the context of the attachmeng trigger.
     if(contextValue.indexOf(this.attachTrigger.trigger) != -1){
+      var attachPos = contextValue.indexOf(this.attachTrigger.trigger) + this.linkTrigger.pos + this.attachTrigger.trigger.length;
       var space = null;
+      // Consider getting different space according whether the at trigger is under the context of the space trigger.
       if(contextValue.indexOf(this.spaceTrigger.trigger) != -1){
-        var space = this.editor.getTextArea().value.substring(this.attachTrigger.pos, this.spaceTrigger.pos-1);
-        var wikipage = this.editor.getTextArea().value.substring(this.spaceTrigger.pos, this.atTrigger.pos-1); 
-        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=space:'+space+' AND name:'+wikipage+' AND filename:__INPUT__* AND type:attachment&nb=30&media=json');
+        var spacePos = contextValue.indexOf(this.spaceTrigger.trigger) + this.linkTrigger.pos + this.spaceTrigger.trigger.length;
+        var space = this.editor.getTextArea().value.substring(attachPos, spacePos-1);
+        var wikipage = this.editor.getTextArea().value.substring(spacePos, this.atTrigger.pos-1); 
+        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND name:'+wikipage+' AND filename:__INPUT__* AND type:attachment')+'&nb=30&media=json');
       } else {
         var wikipage = this.editor.getTextArea().value.substring(this.attachTrigger.pos, this.atTrigger.pos-1);
-        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query=name:'+wikipage+' AND filename:__INPUT__* AND type:attachment&nb=30&media=json'); 
+        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('name:'+wikipage+' AND filename:__INPUT__* AND type:attachment')+'&nb=30&media=json'); 
       }
       // Show the suggestion box for suggestion results.
       this.showSuggestions(requestUrl, query);
