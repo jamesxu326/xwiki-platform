@@ -56,14 +56,13 @@
         &lt;rs id="$url" info="${escapetool.xml($itemdoc.fullName)}"&gt;$escapetool.xml($name)&lt;/rs&gt;
       #end
     &lt;/results&gt;
-  #end
-  #if($media == 'json')
+  #elseif($media == 'json')
     #set($discard = $response.setContentType("application/json"))
     #set($size = $results.size())
     [
       #foreach($item in $results)
-        #set($itemfullname = "${item.wiki}:${item.space}.${item.name}")
-        #set($itemdoc = $xwiki.getDocument($itemfullname))
+        #set($itemReference = $services.model.createDocumentReference($item.wiki, $item.space, $item.name))
+        #set($itemdoc = $xwiki.getDocument($itemReference))
         #if($item.type == "attachment")
           #set($name = $item.filename)
           #set($url = $itemdoc.getAttachmentURL($name))
@@ -71,10 +70,9 @@
           #set($name = $itemdoc.getName())
           #set($url = $itemdoc.getURL())
         #end
-        #if($velocityCount == $size)
-          {"id":"$url", "info":"${escapetool.xml($itemdoc.fullName)}", "name":"$name", "path":"$itemfullname", "type":"$item.type"}
-        #else
-          {"id":"$url", "info":"${escapetool.xml($itemdoc.fullName)}", "name":"$name", "path":"$itemfullname", "type":"$item.type"},
+        {"id":"$url", "info":"${escapetool.javascript($itemdoc.fullName)}", "name":"$name", "path":"$item.wiki:${escapetool.javascript($itemdoc.fullName)}", "type":"$item.type"}
+        #if($velocityCount &lt; $size)
+        ,
         #end
       #end
     ]
