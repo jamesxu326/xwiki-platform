@@ -582,8 +582,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     var insertValue = "";
     if(item.type == "page") {
       insertValue = labelText + ">>" + item.fullName;
-    }
-    if(item.type == "attachment") {
+    } else if (item.type == "attachment") {
       insertValue = labelText + ">>attach:" + item.fullName + "@" + item.name;
     }
     this.editor.insertText(insertValue, this.linkTrigger);
