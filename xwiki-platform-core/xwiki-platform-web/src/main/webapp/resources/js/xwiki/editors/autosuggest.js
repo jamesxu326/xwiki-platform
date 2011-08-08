@@ -11,6 +11,7 @@ var EVENTKEYS = {
   KEY_SHIFT: 16,
   KEY_ALT: 18,
   KEY_CONTROL: 17,
+  KEY_SPACE: 32,
   KEY_F1: 112,
   KEY_F2: 113,
   KEY_F3: 114,
@@ -137,6 +138,10 @@ autosuggestion.Suggestor = Class.create({
 
   onKeyup : function(event) {
     var code = event.keyCode;
+    // Listen to the shortcut for recovering the suggestion context.
+    if(event.ctrlKey && code == Event.KEY_RETURN) {
+      this.continueSuggest(); 
+    }
     // If left, right key is pressed, the suggestion box show not be instantiated
     // or should be destroyed if it has been intantiated.
     // left, right, esc, tab, pageup, pagedown, home, end
@@ -160,6 +165,14 @@ autosuggestion.Suggestor = Class.create({
    * Give suggestion results.
    */
   suggest : function() {
+    // To overwrite
+  },
+
+  /**
+   * Recover the context of the suggestions when user types shortcuts
+   * "ctrl+enter"
+   */
+  continueSuggest : function() {
     // To overwrite
   },
   
