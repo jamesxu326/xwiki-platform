@@ -209,7 +209,7 @@ autosuggestion.Suggestor = Class.create({
    * @Param currentPos The current position of the cursor
    */
   getQuery : function(triggerPos, currentPos) {
-    return this.editor.getTextByPosition(triggerPos, currentPos);
+    return this.editor.getTextByPosition(triggerPos, currentPos).replace(/\\/g, '')
   },
 
   /**  
@@ -274,7 +274,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     }
 
     // Decide whether space trigger "." is triggered
-    if(this.isTrigger(this.spaceTrigger.trigger)) {
+    if(this.isTrigger(this.spaceTrigger.trigger) && !this.isTrigger("\\" + this.spaceTrigger.trigger)) {
       this.spaceTrigger.pos = this.editor.getCursorPosition();
       this.currentTrigger = this.spaceTrigger;
       if(this.suggestionBox != null) {
@@ -283,7 +283,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     }
    
     // Decide whether at trigger "@" is triggered
-    if(this.isTrigger(this.atTrigger.trigger)) {
+    if(this.isTrigger(this.atTrigger.trigger) && !this.isTrigger("\\" + this.atTrigger.trigger)) {
       this.atTrigger.pos = this.editor.getCursorPosition();
       this.currentTrigger = this.atTrigger;
       if(this.suggestionBox != null) {
