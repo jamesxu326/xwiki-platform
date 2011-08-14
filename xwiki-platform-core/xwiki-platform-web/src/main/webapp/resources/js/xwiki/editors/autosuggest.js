@@ -247,6 +247,10 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   /** The sub-trigger for attachments of specific page*/
   atTrigger : {trigger:"@", pos:-1, close:null},
 
+  maxResultNum : 30,
+  maxPagesViewNum : 5,
+  maxAttachmentsViewNum : 3,
+
   initialize : function($super, editor) {
     $super(editor);
   },
@@ -409,19 +413,41 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       // Sort the results list in following orders(only for page name and attachment name):
       // Prior A : Prefix matched
       // Prior B : Partial matched
-      var results = results.sortBy(function(item) {
-        if(item.name.startsWith(query)) {
-          return item.name.length - query.length;
-        } else {
-          return item.name.length + 1000;
+      // Prior C : characters;
+
+      // Sort by characters
+      var resultMap = $H(); 
+      results.each(function(item, index){
+        resultMap.set(item.name.toLowerCase(), item);      
+      });
+      var keys = resultMap.keys().sort();
+      keys.each(function(item, index){
+        results[index] = resultMap.get(item);
+      });
+      // Sort by prefix matches;
+      results = results.sortBy(function(item){
+        var rank = 0;
+	if(item.name.startsWith(query) && query != "") {
+          rank = item.name.length - query.length;
         }
+        return rank;
+      });
+      // Sort by space, the pages which belongs to the same space of the current edit page
+      // will be ranked higher than others
+      results = results.sortBy(function(item) {
+        var rank = 10;
+        var space = XWiki.resource.getSpaceFromResourceName(item.info);
+        if(space == XWiki.currentDocument.space) {
+          rank = 0;
+        }
+        return rank;
       });
       
       for(var i=0; i < results.length; i++) {
-        if(results[i].type == "wikipage"){
+        if(results[i].type == "wikipage" && resultList.pages.length < this.maxPagesViewNum){
           resultList.pages.push({"name":results[i].name, "path":results[i].path, "fullName":results[i].info, "type":"page"});
         }
-        if(results[i].type == "attachment"){
+        if(results[i].type == "attachment" && resultList.attachments.length < this.maxAttachmentsViewNum){
           resultList.attachments.push({"name":results[i].name, "path":results[i].path, "fullName":results[i].info, "type":"attachment"});
         }
       }
@@ -477,11 +503,10 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     }
     console.debug("query for trigger [[:" + query);
     if(query == "") {
-      var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&nb=20&media=json');      
+      var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&nb='+this.maxResultNum+'&media=json');      
     } else {
-      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)')+'&nb=30&media=json');
+      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)')+'&nb='+this.maxResultNum+'&media=json');
     }
-    //"http://localhost:8080/xwiki/bin/get/XWiki/SuggestLuceneService?outputSyntax=plain&query=(name:__INPUT__* AND type:wikipage) OR (filename:__INPUT__* AND type:attachment)&nb=30&media=json"
     // Show the suggestion box for suggestion results.
     this.showSuggestions(requestUrl, query);
   },
@@ -500,7 +525,11 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     var currentPos = this.editor.getCursorPosition();
     var query = this.getQuery(this.attachTrigger.pos, currentPos);
     console.debug("query for trigger attach:" + query);
-    var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('filename:__INPUT__* AND type:attachment')+'&nb=30&media=json');
+    if(query == ""){
+      var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&type=attachment&nb='+this.maxResultNum+'&media=json');   
+    } else {
+      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('filename:__INPUT__* AND type:attachment')+'&nb='+this.maxResultNum+'&media=json');
+    }
     // Show the suggestion box for suggestion results.
     this.showSuggestions(requestUrl, query);
   },
@@ -529,11 +558,19 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
         var labelTriggerPos = contextValue.indexOf(this.labelTrigger.trigger) + this.labelTrigger.trigger.length + this.linkTrigger.pos;
         var space = this.editor.getTextArea().value.substring(labelTriggerPos, this.spaceTrigger.pos-1);
       }
-      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND name:__INPUT__* AND type:wikipage')+'&nb=30&media=json');
+      if(query == ""){
+        var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&type=wikipage&space='+encodeURIComponent(space)+'&nb='+this.maxResultNum+'&media=json');
+      } else {
+        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND name:__INPUT__* AND type:wikipage')+'&nb='+this.maxResultNum+'&media=json');
+      }    
     } else {
       var attachPos = contextValue.indexOf(this.attachTrigger.trigger) + this.attachTrigger.trigger.length + this.linkTrigger.pos
       var space = this.editor.getTextArea().value.substring(attachPos, this.spaceTrigger.pos-1);
-      var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND filename:__INPUT__* AND type:attachment')+'&nb=30&media=json');
+      if(query == ""){
+        var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&type=attachment&space='+encodeURIComponent(space)+'&nb='+this.maxResultNum+'&media=json');
+      } else {
+        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND filename:__INPUT__* AND type:attachment')+'&nb='+this.maxResultNum+'&media=json');
+      }
     }
     // Show the suggestion box for suggestion results.
     this.showSuggestions(requestUrl, query);
@@ -563,10 +600,18 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
         var spacePos = contextValue.indexOf(this.spaceTrigger.trigger) + this.linkTrigger.pos + this.spaceTrigger.trigger.length;
         var space = this.editor.getTextArea().value.substring(attachPos, spacePos-1);
         var wikipage = this.editor.getTextArea().value.substring(spacePos, this.atTrigger.pos-1); 
-        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND name:'+wikipage+' AND filename:__INPUT__* AND type:attachment')+'&nb=30&media=json');
+        if(query == ""){
+          var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&type=attachment&space='+encodeURIComponent(space)+'&name='+encodeURIComponent(wikipage)+'&nb='+this.maxResultNum+'&media=json');
+        } else {
+          var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('space:'+space+' AND name:'+wikipage+' AND filename:__INPUT__* AND type:attachment')+'&nb='+this.maxResultNum+'&media=json');
+        }
       } else {
         var wikipage = this.editor.getTextArea().value.substring(this.attachTrigger.pos, this.atTrigger.pos-1);
-        var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('name:'+wikipage+' AND filename:__INPUT__* AND type:attachment')+'&nb=30&media=json'); 
+        if(query == ""){
+          var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&type=attachment&name='+encodeURIComponent(wikipage)+'&nb='+this.maxResultNum+'&media=json');
+        } else {
+          var requestUrl = new XWiki.Document('SuggestLuceneService', 'XWiki').getURL('get', 'outputSyntax=plain&query='+encodeURIComponent('name:'+wikipage+' AND filename:__INPUT__* AND type:attachment')+'&nb='+this.maxResultNum+'&media=json'); 
+        }
       }
       // Show the suggestion box for suggestion results.
       this.showSuggestions(requestUrl, query);

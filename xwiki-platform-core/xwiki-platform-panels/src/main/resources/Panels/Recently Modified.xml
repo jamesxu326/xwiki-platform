@@ -106,6 +106,9 @@
 <property>
 <content>{{velocity}}
 #set($media = "$!request.media")
+#set($type = "$!request.type")
+#set($space = "$!request.space")
+#set($name = "$!request.name")
 #set($nb = "$!request.nb")
 #if($nb != '')
   #set($nb = $util.parseInt($nb) + 1)
@@ -115,29 +118,42 @@
 
 #if ($media == 'json')
   #set($discard = $response.setContentType("application/json"))
-  #set ($recentlyModifiedPage = $xwiki.searchDocuments('where 1=1 order by doc.date desc', $nb, 0))
-  #set($size = $recentlyModifiedPage.size())
+  #set($queryForPage = 'where 1=1')
+  #set($queryForAttachment = 'where attach.docId=doc.id')
+  #if($space != '')
+    #set($queryForPage = "$queryForPage and doc.space='$space'")
+    #set($queryForAttachment = "$queryForAttachment and doc.space='$space'")
+  #end
+  #if($name != '')
+    #set($queryForPage = "$queryForPage and doc.name='$name'")
+    #set($queryForAttachment = "$queryForAttachment and doc.name='$name'")
+  #end
+ 
   [
-  #foreach ($docname in $recentlyModifiedPage)
-    #if ($xwiki.hasAccessLevel('view', $xcontext.getUser(), $docname))
-      #set ($rdoc = $xwiki.getDocument($docname))
-      #set($name = $rdoc.getName())
-      #set($fullname = "$rdoc.getWiki():$rdoc.getSpace().$rdoc.getName()")
-      {"info":"${escapetool.javascript($rdoc.fullName)}", "path":"${escapetool.javascript($fullname)}", "name":"$name", "type":"wikipage"}
-      #if($velocityCount &lt; $size)
-        ,
-      #end  
+  #if($type == '' || $type == 'wikipage')
+    #set ($recentlyModifiedPage = $xwiki.searchDocuments("$queryForPage order by doc.date desc", $nb, 0))
+    #set($size = $recentlyModifiedPage.size())
+    #foreach ($docname in $recentlyModifiedPage)
+      #if ($xwiki.hasAccessLevel('view', $xcontext.getUser(), $docname))
+        #set ($rdoc = $xwiki.getDocument($docname))
+        #set($name = $rdoc.getName())
+        #set($fullname = "$rdoc.getWiki():$rdoc.getSpace().$rdoc.getName()")
+        {"info":"${escapetool.javascript($rdoc.fullName)}", "path":"${escapetool.javascript($fullname)}", "name":"$name", "type":"wikipage"}
+        #if($velocityCount &lt; $size)
+          ,
+        #end  
+      #end
     #end
   #end
-
-  #set($result = $services.query.hql('select doc.fullName, doc.name, attach.filename
-from XWikiDocument as doc, XWikiAttachment as attach where
-attach.docId=doc.id order by attach.date desc').setLimit($nb).execute())
-  #foreach($item in $result)
-    #if($size &gt; 0 || $velocityCount &gt; 1)
-      ,
+  #if($type == '' || $type == 'attachment')
+    #set($result = $services.query.hql("select doc.fullName, doc.name, attach.filename
+from XWikiDocument as doc, XWikiAttachment as attach $queryForAttachment order by attach.date desc").setLimit($nb).execute())
+    #foreach($item in $result)
+      #if($size &gt; 0 || $velocityCount &gt; 1)
+        ,
+      #end
+      {"name":"$item.get(2)", "path":"${escapetool.javascript($item.get(0))}", "info":"${escapetool.javascript($item.get(0))}", "type":"attachment"}
     #end
-    {"name":"$item.get(2)", "path":"${escapetool.javascript($item.get(0))}", "info":"${escapetool.javascript($item.get(0))}", "type":"attachment"}
   #end
 ]
 #else
