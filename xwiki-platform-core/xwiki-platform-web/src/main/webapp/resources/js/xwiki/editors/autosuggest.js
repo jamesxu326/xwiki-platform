@@ -578,16 +578,29 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
    */
   completeLinkSuggestor : function(item) {
     if(item == null) return;
-    var labelText = "Label Text";
-    var insertValue = "";
-    if(item.type == "page") {
-      insertValue = labelText + ">>" + item.fullName;
-    } else if (item.type == "attachment") {
-      insertValue = labelText + ">>attach:" + item.fullName + "@" + item.name;
-    }
+    var insertValue = this._getInsertValue(item);
     this.editor.insertText(insertValue, this.linkTrigger);
     // Highlight the label text, it is convenient for user to edit the label text
     this.editor.highlightText(this.linkTrigger.pos, labelText.length);
+  },
+ 
+  /**
+   * Generate the relative link reference for link suggestions results.
+   */ 
+  _getInsertValue : function(item) {
+    var labelText = "Label Text";
+    var insertValue = "";
+    var relativeRef = item.fullName;
+    var space = XWiki.resource.getSpaceFromResourceName(item.fullName);
+    if(space == XWiki.currentDocument.space){
+      relativeRef = XWiki.resource.getNameFromResourceName(item.fullName);
+    }
+    if(item.type == "page") {
+      insertValue = labelText + ">>" + relativeRef;
+    } else if (item.type == "attachment") {
+      insertValue = labelText + ">>attach:" + relativeRef + "@" + item.name;
+    }
+    return insertValue;
   }
 });
 
