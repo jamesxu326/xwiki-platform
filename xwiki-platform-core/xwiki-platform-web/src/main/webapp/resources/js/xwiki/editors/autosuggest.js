@@ -1104,7 +1104,7 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
       var titleDiv = new Element('div', {'class' : 'pageItemTitle'}); 
       titleDiv.insert(obj.name);
       	  
-      var fullNameDiv = new Element('div', {'class' : 'pageItemFullname'}); 
+      var fullNameDiv = new Element('div', {'class' : 'itemFullname'}); 
       fullNameDiv.insert(obj.path);
       	  
       pageDiv.appendChild(titleDiv);
@@ -1125,8 +1125,12 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
       var attachmentDiv = new Element('div', {'class' : 'attachmentItem'});		
       var titleDiv = new Element('div', {'class' : 'attachmentItemTitle'});		 
       titleDiv.insert(obj.name);
+
+      var fullNameDiv = new Element('div', {'class' : 'itemFullname'});
+      fullNameDiv.insert(obj.path);
 	  
       attachmentDiv.appendChild(titleDiv);		
+      attachmentDiv.appendChild(fullNameDiv);
       suggestion_attachment.appendChild(attachmentDiv);
       suggestion_attachment.scrollTop = 0;
     })
