@@ -371,11 +371,8 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     if(triggerPos != -1) {
       if(strBetweenBefore.indexOf(this.linkTrigger.close) == -1) {
         var obj = {"linkPos":-1, "linkClosePos":-1, "labelPos":-1, "attachPos":-1, "spacePos":-1, "atPos":-1}
-        var linkContent = this.editor.getTextArea().value.substring(triggerPos + this.linkTrigger.trigger.length, currentPos);
+        var linkContent = strBetweenBefore;
         obj.linkPos = triggerPos + this.linkTrigger.trigger.length
-        if(triggerClosePos != -1) {
-          obj.labelPos = triggerClosePos + obj.linkPos;
-        }
         if(linkContent.indexOf(this.labelTrigger.trigger) != -1){
           obj.labelPos = linkContent.indexOf(this.labelTrigger.trigger) + obj.linkPos + this.labelTrigger.trigger.length;
         }
@@ -416,14 +413,10 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       // Prior C : characters;
 
       // Sort by characters
-      var resultMap = $H(); 
-      results.each(function(item, index){
-        resultMap.set(item.name.toLowerCase(), item);      
+      results = results.sortBy(function(item){
+        return item.name.toLowerCase();
       });
-      var keys = resultMap.keys().sort();
-      keys.each(function(item, index){
-        results[index] = resultMap.get(item);
-      });
+
       // Sort by prefix matches;
       results = results.sortBy(function(item){
         var rank = 0;
@@ -437,10 +430,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
       results = results.sortBy(function(item) {
         var rank = 10;
         var space = XWiki.resource.getSpaceFromResourceName(item.info);
-        if(space == XWiki.currentDocument.space) {
-          rank = 0;
-        }
-        return rank;
+        return space == XWiki.currentDocument.space ? 0 : 10;
       });
       
       for(var i=0; i < results.length; i++) {
@@ -623,7 +613,8 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
    */
   completeLinkSuggestor : function(item) {
     if(item == null) return;
-    var insertValue = this._getInsertValue(item);
+    var labelText = "Label Text";
+    var insertValue = this._getInsertValue(labelText, item);
     this.editor.insertText(insertValue, this.linkTrigger);
     // Highlight the label text, it is convenient for user to edit the label text
     this.editor.highlightText(this.linkTrigger.pos, labelText.length);
@@ -632,18 +623,22 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   /**
    * Generate the relative link reference for link suggestions results.
    */ 
-  _getInsertValue : function(item) {
-    var labelText = "Label Text";
+  _getInsertValue : function(labelText, item) {
     var insertValue = "";
     var relativeRef = item.fullName;
     var space = XWiki.resource.getSpaceFromResourceName(item.fullName);
+    var pageName = XWiki.resource.getNameFromResourceName(item.fullName);
     if(space == XWiki.currentDocument.space){
-      relativeRef = XWiki.resource.getNameFromResourceName(item.fullName);
+      relativeRef = pageName;
     }
     if(item.type == "page") {
       insertValue = labelText + ">>" + relativeRef;
     } else if (item.type == "attachment") {
-      insertValue = labelText + ">>attach:" + relativeRef + "@" + item.name;
+      if(relativeRef == XWiki.currentDocument.page){
+        insertValue = labelText + ">>attach:" + item.name;
+      } else {
+        insertValue = labelText + ">>attach:" + relativeRef + "@" + item.name;
+      }
     }
     return insertValue;
   }
@@ -1517,116 +1512,8 @@ autosuggestion.MacroSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
 return XWiki;
 }(XWiki || {}));
 
-// Init test tools for suggestion box.
+// Start the link suggestion functions.
 document.observe('xwiki:dom:loaded', function() {
-  var testLinkSuggestionBox = function(){
-    var suggestionBox = null;
-    var editor = $("content");
-    var testBox = new Element('div', {'id' : 'testBox'});
-    testBox.setStyle({"padding":"2px 0", "border":"1px solid #bebebe"});
-    $("xwikitext").insert({top:testBox});
-    testBox.insert("Page Results: <input type='text' id='pageResults' value='[\"page1\", \"page2\", \"page3\", \"page4\", \"page5\", \"page6\"]' size=80/><br/>"
-                                 +"Attachment Results: <input type='text' id='attachmentResults' value='[\"attachment1\", \"attachment2\", \"attachment3\", \"attachment4\", \"attachment5\", \"attachment6\"]'  size=80/><br/>"
-                                 +"top : <input type='text' id='boxtop' value='0' size=5/>px left : <input type='text' id='boxleft' value='0' size=5/>px<br/>"
-                                 +"width : <input type='text' id='boxwidth' value='200' size=5/>px height : <input type='text' id='boxheight' value='400' size=5/>px<br/>"
-                                 +"<input type='button' id='testshow' value='Show suggestion box'/> "
-                                 +"<input type='button' id='testRemove' value='Remove suggestion box'/> ");
-
-    $("testshow").observe("click", function(event){
-      var pageResults = $("pageResults").value;
-      if(pageResults == ""){
-        pageResults = null;
-      }else{
-        pageResults = pageResults.evalJSON()
-      }
-      var attachmentResults = $("attachmentResults").value
-      if(attachmentResults == ""){
-        attachmentResults = null;
-      }else{
-        attachmentResults = attachmentResults.evalJSON()
-      }
-      var results = $H({"pages":pageResults, "attachments":attachmentResults})
-
-      var editorOffset = editor.cumulativeOffset();
-      //console.debug(document.viewport.getScrollOffsets());
-      //console.debug(editor.cumulativeOffset());
-      //console.debug(editor.cumulativeScrollOffset());
-      //console.debug(editorOffset);
-      var top = parseInt($("boxtop").value);
-      var left = parseInt($("boxleft").value);
-      var width = parseInt($("boxwidth").value);
-      var height = parseInt($("boxheight").value);
-      if(top<editorOffset.top || top>editorOffset.top+testBox.getHeight() || left<editorOffset.left || left>editorOffset.left+testBox.getWidth()){
-        alert("The position of suggestion box must between top:"+editorOffset.top+" - "+(editorOffset.top+testBox.getHeight())+"  and left:"+editorOffset.left+" - "+(editorOffset.left+testBox.getWidth()));
-        return;
-      }
-      if(suggestionBox == null || suggestionBox.isDestroyed()) {
-        suggestionBox = new XWiki.autosuggestion.LinkSuggestionBox(results, {"top":top, "left":left}, {"width":width, "height":height}, {"type":"wiki", "obj":editor});
-      }
-      suggestionBox.showSuggestions(results, {"top":top, "left":left}, {"width":width, "height":height});
-      editor.focus();
-    })
-
-    $("testRemove").observe("click", function(event){
-      suggestionBox.destroy();
-      suggestionBox = null;
-    });
-
-  }  
-
-  // Test image suggestion box
-  var testImageSuggestionBox = function() {
-    var suggestionBox = null;
-    var editor = $("content");
-    var testBox = new Element('div', {'id' : 'testBox'});
-    testBox.setStyle({"padding":"2px 0", "border":"1px solid #bebebe"});
-    $("xwikitext").insert({top:testBox});
-    testBox.insert("Image Results: <input type='text' id='imageResults' value='[{\"url\":\"http://farm6.static.flickr.com/5235/5852377601_b3f165b9d4_s.jpg\", \"title\":\"A nice picture1\", \"fullname\":\"Located in xwiki >> Xwiki >> Xwikigallery\"}, {\"url\":\"http://farm4.static.flickr.com/3074/5855874578_07df3ac848_s.jpg\", \"title\":\"A nice picture2\", \"fullname\":\"Located in xwiki >> Xwiki >> Xwikigallery\"}, {\"url\":\"http://farm6.static.flickr.com/5272/5864590841_78060e58ec_s.jpg\", \"title\":\"A nice picture3\", \"fullname\":\"Located in xwiki >> Xwiki >> Xwikigallery\"}, {\"url\":\"http://farm6.static.flickr.com/5160/5800480924_dab675815f_s.jpg\", \"title\":\"A nice picture4\", \"fullname\":\"Located in xwiki >> Xwiki >> Xwikigallery\"},{\"url\":\"http://farm6.static.flickr.com/5238/5857007301_f482b99845_s.jpg\", \"title\":\"A nice picture5\", \"fullname\":\"Located in xwiki >> Xwiki >> Xwikigallery\"}]' size=80/><br/>"
-				 +"top : <input type='text' id='boxtop' value='0' size=5/>px left : <input type='text' id='boxleft' value='0' size=5/>px<br/>"
-				 +"width : <input type='text' id='boxwidth' value='300' size=5/>px height : <input type='text' id='boxheight' value='400' size=5/>px<br/>"
-				 +"<input type='button' id='testshow' value='Show suggestion box'/> "
-				 +"<input type='button' id='testRemove' value='Remove suggestion box'/> ");
-  
-    $("testshow").observe("click", function(event){	
-      var imageResults = $("imageResults").value;
-      if(imageResults == ""){
-        imageResults = null;
-      }else{
-        imageResults = imageResults.evalJSON()
-      }
-      var results = imageResults
-	
-      var editorOffset = editor.cumulativeOffset();
-      //console.debug(document.viewport.getScrollOffsets());
-      //console.debug(editor.cumulativeOffset());
-      //console.debug(editor.cumulativeScrollOffset());
-      //console.debug(editorOffset);
-      var top = parseInt($("boxtop").value);
-      var left = parseInt($("boxleft").value);
-      var width = parseInt($("boxwidth").value);
-      var height = parseInt($("boxheight").value);
-      if(top<editorOffset.top || top>editorOffset.top+testBox.getHeight() || left<editorOffset.left || left>editorOffset.left+testBox.getWidth()){
-        alert("The position of suggestion box must between top:"+editorOffset.top+" - "+(editorOffset.top+testBox.getHeight())+"  and left:"+editorOffset.left+" - "+(editorOffset.left+testBox.getWidth()));
-        return;
-      }
-      if(suggestionBox == null || suggestionBox.isDestroyed()) {
-        suggestionBox = new XWiki.autosuggestion.ImageSuggestionBox(results, {"top":top, "left":left}, {"width":width, "height":height}, {"type":"wiki", "obj":editor});
-      }  
-      suggestionBox.showSuggestions(results, {"top":top, "left":left}, {"width":width, "height":height});
-      editor.focus();
-    })
-  
-    $("testRemove").observe("click", function(event){
-      suggestionBox.destroy();
-      suggestionBox = null;
-    });
-  }
-
-  var testSuggestor = function() {
-    var linkSuggestor = new XWiki.autosuggestion.LinkSuggestor("content");
-    linkSuggestor.start();
-  }
-  //testLinkSuggestionBox();
-  //testImageSuggestionBox();
-  testSuggestor();
+  var linkSuggestor = new XWiki.autosuggestion.LinkSuggestor("content");
+  linkSuggestor.start();
 });

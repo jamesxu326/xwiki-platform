@@ -70,7 +70,7 @@
           #set($name = $itemdoc.getName())
           #set($url = $itemdoc.getURL())
         #end
-        {"id":"$url", "info":"${escapetool.javascript($itemdoc.fullName)}", "name":"$name", "path":"$item.wiki:${escapetool.javascript($itemdoc.fullName)}", "type":"$item.type"}
+        {"id":"$url", "info":"${escapetool.javascript($itemdoc.fullName)}", "name":"${escapetool.javascript($name)}", "path":"${escapetool.javascript($services.model.serialize($itemReference, 'default'))}", "type":"$item.type"}
         #if($velocityCount &lt; $size)
         ,
         #end

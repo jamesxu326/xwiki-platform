@@ -138,7 +138,7 @@
         #set ($rdoc = $xwiki.getDocument($docname))
         #set($name = $rdoc.getName())
         #set($fullname = "$rdoc.getWiki():$rdoc.getSpace().$rdoc.getName()")
-        {"info":"${escapetool.javascript($rdoc.fullName)}", "path":"${escapetool.javascript($fullname)}", "name":"$name", "type":"wikipage"}
+        {"info":"${escapetool.javascript($rdoc.fullName)}", "path":"${escapetool.javascript($fullname)}", "name":"${escapetool.javascript($name)}", "type":"wikipage"}
         #if($velocityCount &lt; $size)
           ,
         #end  
@@ -152,7 +152,7 @@ from XWikiDocument as doc, XWikiAttachment as attach $queryForAttachment order b
       #if($size &gt; 0 || $velocityCount &gt; 1)
         ,
       #end
-      {"name":"$item.get(2)", "path":"${escapetool.javascript($item.get(0))}", "info":"${escapetool.javascript($item.get(0))}", "type":"attachment"}
+      {"name":"${escapetool.javascript($item.get(2))", "path":"${escapetool.javascript($item.get(0))}", "info":"${escapetool.javascript($item.get(0))}", "type":"attachment"}
     #end
   #end
 ]
