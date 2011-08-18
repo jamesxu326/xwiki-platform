@@ -30,3 +30,5 @@ $xwiki.ssfx.use('uicomponents/widgets/fullScreen.css', true)
 ## Autosave feature
 $xwiki.jsfx.use('js/xwiki/editors/autosave.js', true)
 $xwiki.ssfx.use('js/xwiki/editors/autosave.css', true)
+$xwiki.jsfx.use('js/xwiki/editors/autosuggest.js', true)
+$xwiki.ssfx.use('js/xwiki/editors/autosuggest.css', true)
