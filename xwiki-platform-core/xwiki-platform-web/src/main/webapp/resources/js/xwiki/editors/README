@@ -1,0 +1,26 @@
+Implemented the auto-suggestion functions for wiki editor, it contains the following features:
+1). Wherever typing "[[" (trigger for link suggestion), a suggestion box with recently modified pages and their attachments will show up bellow the trigger. When user keeps typing, the suggestions will be the search results for the query which is typed after "[[". 
+2). Sub-triggers "attach:", ".", "@" of link trigger "[[" will also trigger the suggestions.
+   a). Trigger "attach:" : When "attach:" is triggered with no queries, the default suggestions will be the attachments of the recently modified pages. Otherwise, the suggestions will be the search results for the query which is typed after "attach:".
+   b). Trigger "." : There are two situations. The first situation is under page context, like "[[Space.", in this case, the default suggestions will be the recently modified pages under space "Space", otherwise, the suggestions will be the search results for the query which is typed after "." under the space "Space"; The second situation is under "attach:" context, like "[[attach:Space.", in this case, the default suggestion will be the attachments which belongs to the recently modified pages under the space "Space", otherwise the suggestions will be the search results for the query which is typed after "." under the space "Space".
+   c). Trigger "@" : Suggestions for "@" is only triggered under "attach:" context like "[[attach:Space.page@", and the default suggestions will be attachments belongs to the page "Space.page", otherwise the suggestions will be the search results for the query which is typed after "@" of the page "Space.page".
+3). Shortcut "ctrl+enter" to re-open the suggestions under link context. 
+4). Relative page references. If the page or attachment selected is under the same space with the current edit page, the relative page reference will be generated.
+
+Two files are added for the features above:
+1). ./autosuggest.js     Javascript functions for all the features of link auto-suggestion of wiki editor.
+2). ./autosuggest.css    Css for link auto-suggestion.
+
+Three files are modified for the features above:
+1). /xwiki-platform/xwiki-platform-core/xwiki-platform-search/xwiki-platform-search-ui/src/main/resources/XWiki/SuggestLuceneService.xml  Add media parameters, when media is json, the result will be json format. It is used for retrieving suggestions results according to user input queries.
+2). /xwiki-platform/xwiki-platform-core/xwiki-platform-panels/src/main/resources/Panels/Recently Modified.xml  Generate the default suggestion results for "[[" and its sub-triggers "attach:", "." and "@".
+3). /xwiki-platform/xwiki-platform-core/xwiki-platform-web/src/main/webapp/templates/editwiki.vm   Load autosuggest.js and autosuggest.css.
+
+Installations:
+Step 1: copy the autosuggest.js and autosuggest.css to "<xe-root>/webapps/xwiki/resources/js/xwiki/editors".
+Step 2: replace "<xe-root>/webapps/xwiki/templates/editwiki.vm" in xe with  "/xwiki-platform/xwiki-platform-core/xwiki-platform-web/src/main/webapp/templates/editwiki.vm in "xwiki-platform"
+Step 3: Go to the edit page "http://<localhost>/xwiki/bin/edit/XWiki/SuggestLuceneService?&editor=wiki" for "SuggestLuceneService", relpace all the content of the editor with the content in the dom path:"xwikidoc->content" of the xml "/xwiki-platform/xwiki-platform-core/xwiki-platform-search/xwiki-platform-search-ui/src/main/resources/XWiki/SuggestLuceneService.xm". Replace "&lt;", "&gt;"  and "&amp;" to "<",">" and "&" in the content.
+Step 4: Go to the edit page "http://<localhost>/xwiki/bin/edit/Panels/Recently+Modified?&editor=wiki" for "Recently Modified documents", reploace all the content of the editor with the content in the dom path: "xwikidoc->content" of the xml "/xwiki-platform/xwiki-platform-core/xwiki-platform-panels/src/main/resources/Panels/Recently Modified.xml". Replace "&lt;", "&gt;"  and "&amp;" to "<",">" and "&" in the content.
+Step 5: Go to the edit page "http://<localhost>/xwiki/bin/edit/Panels/Recently+Modified?&editor=object" for "Recently Modified documents", replace all the content of "PanelClass 0: Recently Modified " with the content in the dom path: "xwikidoc->object->property->content"  of xml "/xwiki-platform/xwiki-platform-core/xwiki-platform-panels/src/main/resources/Panels/Recently Modified.xml". Replace "&lt;", "&gt;"  and "&amp;" to "<",">" and "&" in the content.
+Step 6: Restart the server.
+
