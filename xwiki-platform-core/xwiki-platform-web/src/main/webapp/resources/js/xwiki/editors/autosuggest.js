@@ -711,6 +711,7 @@ autosuggestion.WikiEditor = Class.create({
     this.setCursorPosition(position);
     if(document.selection) {
       var range = this.textArea.createTextRange();
+      range.move("character", position);
       for(var i=0; i < charLength; i++) {
         range.expand("character");
       }
