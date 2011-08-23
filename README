@@ -18,9 +18,8 @@ Three files are modified for the features above:
 
 Installations:
 Step 1: copy the autosuggest.js and autosuggest.css to "<xe-root>/webapps/xwiki/resources/js/xwiki/editors".
-Step 2: replace "<xe-root>/webapps/xwiki/templates/editwiki.vm" in xe with  "/xwiki-platform/xwiki-platform-core/xwiki-platform-web/src/main/webapp/templates/editwiki.vm in "xwiki-platform"
+Step 2: replace "<xe-root>/webapps/xwiki/templates/editwiki.vm" in xe with  "/xwiki-platform/xwiki-platform-core/xwiki-platform-web/src/main/webapp/templates/editwiki.vm" in "xwiki-platform".
 Step 3: Go to the edit page "http://<localhost>/xwiki/bin/edit/XWiki/SuggestLuceneService?&editor=wiki" for "SuggestLuceneService", relpace all the content of the editor with the content in the dom path:"xwikidoc->content" of the xml "/xwiki-platform/xwiki-platform-core/xwiki-platform-search/xwiki-platform-search-ui/src/main/resources/XWiki/SuggestLuceneService.xm". Replace "&lt;", "&gt;"  and "&amp;" to "<",">" and "&" in the content.
-Step 4: Go to the edit page "http://<localhost>/xwiki/bin/edit/Panels/Recently+Modified?&editor=wiki" for "Recently Modified documents", reploace all the content of the editor with the content in the dom path: "xwikidoc->content" of the xml "/xwiki-platform/xwiki-platform-core/xwiki-platform-panels/src/main/resources/Panels/Recently Modified.xml". Replace "&lt;", "&gt;"  and "&amp;" to "<",">" and "&" in the content.
-Step 5: Go to the edit page "http://<localhost>/xwiki/bin/edit/Panels/Recently+Modified?&editor=object" for "Recently Modified documents", replace all the content of "PanelClass 0: Recently Modified " with the content in the dom path: "xwikidoc->object->property->content"  of xml "/xwiki-platform/xwiki-platform-core/xwiki-platform-panels/src/main/resources/Panels/Recently Modified.xml". Replace "&lt;", "&gt;"  and "&amp;" to "<",">" and "&" in the content.
-Step 6: Restart the server.
+Step 4: Build "/xwiki-platform/xwiki-platform-core/xwiki-platform-search/xwiki-platform-search-ui/" and import the created xar, selecting only the "XWiki.SuggestLuceneService" page.
+Step 5: Build "/xwiki-platform/xwiki-platform-core/xwiki-platform-panels/" and import the created xar, selecting only the "Panels.Recently Modified" page.
 
