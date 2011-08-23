@@ -930,7 +930,7 @@ autosuggestion.SuggestionBox = Class.create({
       "top": position.top + "px",
       "left": position.left + "px",
       "width": size.width + "px",
-      "height": size.height + "px",
+      "height": size.height + "px"
     });
   },
   
