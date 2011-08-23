@@ -452,8 +452,7 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
   },
   
   _onFailure : function(response) {
-    console.debug("suggestion failures:");
-    console.debug(response);
+    alert("suggestion failures");
   },
 
   /**  
@@ -474,7 +473,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     // context. For example: onclick - move the cursor to other position
     // pageDown and pageUp... 
     if(!this._decideLinkContext()) {
-      console.debug("Out of the [[ trigger context, waiting...");
       this.currentTrigger = null;
       if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
         this.suggestionBox.destroy();
@@ -491,7 +489,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     } else {
       var query = this.getQuery(this.linkTrigger.pos + this.labelTrigger.trigger.length + labelPos, currentPos);
     }
-    console.debug("query for trigger [[:" + query);
     if(query == "") {
       var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&nb='+this.maxResultNum+'&media=json');      
     } else {
@@ -503,7 +500,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
 
   _actionAttachTriggered : function() {
     if(!this._decideLinkContext()) {
-      console.debug("Out of the attach: trigger context, waiting...");
       this.currentTrigger = null;
       if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
         this.suggestionBox.destroy();
@@ -514,7 +510,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     // Get the value user typed after the trigger as the query for suggestion
     var currentPos = this.editor.getCursorPosition();
     var query = this.getQuery(this.attachTrigger.pos, currentPos);
-    console.debug("query for trigger attach:" + query);
     if(query == ""){
       var requestUrl = new XWiki.Document('Recently Modified', 'Panels').getURL('get', 'xpage=plain&outputSyntax=plain&type=attachment&nb='+this.maxResultNum+'&media=json');   
     } else {
@@ -526,7 +521,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
 
   _actionSpaceTriggered : function() {
     if(!this._decideLinkContext()) {
-      console.debug("Out of the '.' trigger context, waiting...");
       this.currentTrigger = null;
       if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
         this.suggestionBox.destroy();
@@ -537,7 +531,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     // Get the value user typed after the trigger as the query for suggestion
     var currentPos = this.editor.getCursorPosition();
     var query = this.getQuery(this.spaceTrigger.pos, currentPos);
-    console.debug("query for trigger '.':" + query);
     var contextValue = this.editor.getTextArea().value.substring(this.linkTrigger.pos, currentPos);
     // Consider getting the page or attachment suggestions according whether the space trigger is in the context of attachmengt trigger.
     if(contextValue.indexOf(this.attachTrigger.trigger) == -1){
@@ -568,7 +561,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
 
   _actionAtTriggered : function() {
     if(!this._decideLinkContext()) {
-      console.debug("Out of the '@' trigger context, waiting...");
       this.currentTrigger = null;
       if(this.suggestionBox != null && !this.suggestionBox.isDestroyed()) {
         this.suggestionBox.destroy();
@@ -579,7 +571,6 @@ autosuggestion.LinkSuggestor = Class.create(autosuggestion.Suggestor, {
     // Get the value user typed after the trigger as the query for suggestion
     var currentPos = this.editor.getCursorPosition();
     var query = this.getQuery(this.atTrigger.pos, currentPos);
-    console.debug("query for trigger '@':" + query);
     var contextValue = this.editor.getTextArea().value.substring(this.linkTrigger.pos, currentPos);
     // The suggestion will be retreved only when "@" trigger is in the context of the attachmeng trigger.
     if(contextValue.indexOf(this.attachTrigger.trigger) != -1){
@@ -1000,7 +991,6 @@ autosuggestion.SuggestionBox = Class.create({
         break;
       case 13:
         var selectedValue = this.getSelectedItemValue(i);
-        console.debug("selected item value:" + selectedValue);
         document.fire("xwiki:autosuggestion:itemSelected", {"type":"link", "selectedValue":selectedValue});
         this.destroy();
 	Event.stop(event);  
@@ -1193,7 +1183,6 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
     } else {
       results = this.pageItemValues.concat(this.attachmentItemValues);
     }
-    console.debug("selected item value:" + results[index]);
     document.fire("xwiki:autosuggestion:itemSelected", {"type":"link", "selectedValue":results[index]});
     this.destroy();// todo: this.destroy()
   },
@@ -1202,9 +1191,7 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
   keyNavigateHandler : function(index, itemList){
     var titleContainerHeight = $("suggestion_head").getHeight(); 
     var pageContainerHeight = $("suggestion_wikipage") == null ? 0 : $("suggestion_wikipage").getHeight();
-    //console.debug("pageContainerHeight:"+pageContainerHeight);
     var attachmentContainerHeight = $("suggestion_attachment") == null ? 0 : $("suggestion_attachment").getHeight();
-    //console.debug("attachmentContainerHeight:"+attachmentContainerHeight);
     var pageItemValuesLength = this.pageItemValues == null ? 0 : this.pageItemValues.length;
     var attachmentItemValuesLength = this.attachmentItemValues == null ? 0 : this.attachmentItemValues.length;
 	
@@ -1213,8 +1200,6 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
 	
     if(this.pageItemValues && index < pageItemValuesLength) {
       var scrollTop = $("suggestion_wikipage").scrollTop;
-      //console.debug("wikipage_relativeTop:"+relativeTop)
-      //console.debug("wikipage_scrollTop:"+scrollTop)
       if(relativeTop <= scrollTop) {
  	$("suggestion_wikipage").scrollTop -= scrollTop - relativeTop;
       }
@@ -1228,9 +1213,7 @@ autosuggestion.LinkSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
   	$("suggestion_attachment").scrollTop = 0;
       }
       var scrollTop = $("suggestion_attachment").scrollTop;
-      //console.debug("attachment_scrollTop:"+scrollTop)
       relativeTop = relativeTop - pageContainerHeight;
-      //console.debug("attachment_relativeTop:"+relativeTop)
       if(relativeTop <= scrollTop) {
 	$("suggestion_attachment").scrollTop -= scrollTop - relativeTop;
       }
@@ -1425,7 +1408,6 @@ autosuggestion.ImageSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
   /** @Overwrite */
   itemDbClickHandler : function(index, itemList){
     this.index = index;
-    console.debug("selected item value:" + this.imageItemValues[index]);
     document.fire("xwiki:autosuggestion:itemSelected", {selectedValue:this.imageItemValues[index]});
     this.destroy();// todo: this.destroy()
   },
@@ -1434,7 +1416,6 @@ autosuggestion.ImageSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
   keyNavigateHandler : function(index, itemList){
     var titleContainerHeight = $("suggestion_head").getHeight();
     var imageContainerHeight = $("suggestion_images") == null ? 0 : $("suggestion_images").getHeight();
-    //console.debug("imageContainerHeight:"+imageContainerHeight);
     var imageItemValuesLength = this.imageItemValues == null ? 0 : this.imageItemValues.length;
 
     var selectedItem = itemList[index];
@@ -1442,8 +1423,6 @@ autosuggestion.ImageSuggestionBox = Class.create(autosuggestion.SuggestionBox,{
 
     if(this.imageItemValues && index < imageItemValuesLength) {
       var scrollTop = $("suggestion_images").scrollTop;
-      //console.debug("wikipage_relativeTop:"+relativeTop)
-      //console.debug("wikipage_scrollTop:"+scrollTop)
       if(relativeTop <= scrollTop) {
         $("suggestion_images").scrollTop -= scrollTop - relativeTop;
       }
