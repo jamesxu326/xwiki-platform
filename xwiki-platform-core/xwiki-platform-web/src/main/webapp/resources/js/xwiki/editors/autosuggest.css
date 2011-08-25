@@ -1,5 +1,9 @@
 .suggestion_editor{
-  font-family : monospace, monosapce;
+  /**
+   * Hack monospace is smaller in webkit(chrome)
+   * See: http://www.undermyhat.org/blog/2009/09/css-font-family-monospace-renders-inconsistently-in-firefox-and-chrome/
+   */
+  font-family : monospace, monospace;
   word-wrap : break-word;
   font-size : 14px;
   line-height : 18px;
